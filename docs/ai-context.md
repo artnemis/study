@@ -114,6 +114,7 @@ Frontend:
 
 * Next.js (App Router)
 * TypeScript
+* middleware-based launch gate via `COMING_SOON_ENABLED`
 
 Backend:
 
@@ -163,6 +164,8 @@ i18n:
 * /app/api/profile → user profile and API key management
 * /app/auth → sign-in and sign-up UI pages
 * /app/profile → user profile page
+* /app/coming-soon → launch gate page shown when the site is temporarily closed
+* /middleware.ts → global request gate for launch / maintenance mode
 * /docs → public repo documentation and onboarding
 
 ---
@@ -187,6 +190,7 @@ The MVP ships the following pages:
 | `/`                 | Public landing page – hero, feature highlights, CTA  |
 | `/auth/sign-in`     | Sign in with email and password                      |
 | `/auth/sign-up`     | Register new account                                 |
+| `/coming-soon`      | Public launch gate page shown when access is paused  |
 | `/dashboard`        | Authenticated overview – recent modules, quick stats |
 | `/modules`          | Browse, search and create study modules              |
 | `/modules/[id]`     | Module detail – content, members, invite, quiz, plan |

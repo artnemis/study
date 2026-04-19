@@ -12,6 +12,7 @@ Users must always know where they are and how to reach any section.
 | Route           | Label        | Description                        |
 |-----------------|--------------|------------------------------------|
 | /               | Home         | Public landing page                |
+| /coming-soon    | Coming Soon  | Temporary launch / maintenance gate |
 | /dashboard      | Dashboard    | Overview with stats and shortcuts  |
 | /modules        | Moduli       | Browse, search, create modules     |
 | /modules/[id]   | (detail)     | Single module workspace            |
@@ -23,7 +24,7 @@ Users must always know where they are and how to reach any section.
 ## Shared Components
 
 ### Navbar
-- fixed top bar on every page
+- fixed top bar on every page except `/coming-soon`
 - logo on the left, nav links centered or right
 - highlights active route
 - responsive: hamburger menu on mobile
@@ -35,9 +36,9 @@ Users must always know where they are and how to reach any section.
 
 ## Rules
 
-- navbar is a server component wrapping client interactive parts
+- navbar is hidden on `/coming-soon` to avoid exposing unavailable sections during the launch gate
 - active link detection uses `usePathname()`
-- no business logic in navigation components
+- no business logic in navigation components; global access gating is handled in middleware
 
 ---
 
@@ -45,3 +46,4 @@ Users must always know where they are and how to reach any section.
 
 - /app/_components/navbar.tsx
 - /app/layout.tsx
+- /middleware.ts

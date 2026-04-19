@@ -10,6 +10,10 @@ export function Navbar() {
   const { data: session } = useSession();
   const t = useT();
 
+  if (pathname === "/coming-soon") {
+    return null;
+  }
+
   const links = [
     { href: "/dashboard", label: t.nav_dashboard },
     { href: "/modules", label: t.nav_modules },
