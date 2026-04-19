@@ -22,6 +22,7 @@ export default function PlansContent() {
   const [form, setForm] = useState({
     examDate: "",
     dailyStudyMinutes: "90",
+    template: "mixed" as "multiple-choice" | "free-response" | "mixed",
     topics: searchParams.get("topics") ?? "",
   });
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export default function PlansContent() {
       const result = await generatePlanApi({
         examDate: form.examDate,
         dailyStudyMinutes: Number(form.dailyStudyMinutes),
+        template: form.template,
         topics,
       });
       setPlanResult(result);
@@ -68,6 +70,13 @@ export default function PlansContent() {
           </div>
           <Field label={t.plan_topics}>
             <textarea className={`${fieldClassName} min-h-20 resize-y`} value={form.topics} onChange={(e) => setForm((f) => ({ ...f, topics: e.target.value }))} placeholder={t.plan_topicsPlaceholder} />
+          </Field>
+          <Field label={t.tmpl_label}>
+            <select className={fieldClassName} value={form.template} onChange={(e) => setForm((f) => ({ ...f, template: e.target.value as typeof f.template }))}>
+              <option value="multiple-choice">{t.tmpl_multipleChoice}</option>
+              <option value="free-response">{t.tmpl_freeResponse}</option>
+              <option value="mixed">{t.tmpl_mixed}</option>
+            </select>
           </Field>
           <button disabled={isSubmitting} className={primaryButtonClassName} type="submit">
             {isSubmitting ? t.plan_generating : t.plan_generate}

@@ -83,17 +83,24 @@ export class OpenAIProvider implements AIProvider {
 function buildPlanPrompt(input: GeneratePlanInput): string {
   return [
     "Generate a study plan as JSON with this exact shape:",
-    '{"days":[{"date":"YYYY-MM-DD","tasks":[{"kind":"study|quiz","topic":"string","durationMinutes":45,"description":"string"}]}]}',
+    '{"days":[{"date":"YYYY-MM-DD","tasks":[{"kind":"study|quiz|review|exercise","topic":"string","durationMinutes":45,"description":"string"}]}]}',
     `Exam date: ${input.examDate}`,
     `Topics: ${input.topics.join(", ")}`,
     `Daily study minutes: ${String(input.dailyStudyMinutes)}`,
+    `Template style: ${input.template ?? "mixed"}`,
   ].join("\n");
 }
 
 function buildQuizPrompt(input: GenerateQuizInput): string {
+  const templateInstruction = input.template === "free-response"
+    ? 'Each question must have "type":"free-response" and an empty options array.'
+    : input.template === "mixed"
+    ? 'Mix multiple-choice (4 options) and free-response questions. Set "type" accordingly.'
+    : 'Each question must have "type":"multiple-choice" with exactly 4 options.';
   return [
     "Generate a quiz as JSON with this exact shape:",
-    '{"topic":"string","difficulty":"easy|medium|hard","questions":[{"prompt":"string","options":["a","b","c","d"],"correctAnswer":"string","explanation":"string"}]}',
+    '{"topic":"string","difficulty":"easy|medium|hard","template":"' + input.template + '","questions":[{"prompt":"string","options":["a","b","c","d"],"correctAnswer":"string","explanation":"string","type":"multiple-choice|free-response"}]}',
+    templateInstruction,
     `Topic: ${input.topic}`,
     `Difficulty: ${input.difficulty}`,
     `Previous mistakes: ${input.previousMistakes.join(", ") || "none"}`,

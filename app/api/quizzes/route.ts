@@ -1,5 +1,5 @@
 import { generateQuiz } from "@/core/quiz/generateQuiz";
-import type { QuizDifficulty } from "@/core/quiz/quiz.types";
+import type { QuizDifficulty, QuizTemplate } from "@/core/quiz/quiz.types";
 
 import { auth } from "@/auth";
 import { getAIMode, getAIProvider } from "../_server/ai-provider";
@@ -26,6 +26,7 @@ export async function POST(request: Request) {
         previousMistakes: Array.isArray(payload.previousMistakes)
           ? payload.previousMistakes.map((value) => String(value))
           : [],
+        template: (String(payload.template ?? "multiple-choice")) as QuizTemplate,
         topic: String(payload.topic ?? ""),
       },
       {

@@ -83,6 +83,7 @@ describe("OpenAIProvider", () => {
       provider.generateQuiz({
         difficulty: "easy",
         previousMistakes: [],
+        template: "multiple-choice",
         topic: "Geometry",
       }),
     ).resolves.toEqual({
@@ -232,6 +233,7 @@ describe("OpenAIProvider", () => {
       provider.generateQuiz({
         difficulty: "easy",
         previousMistakes: [],
+        template: "multiple-choice",
         topic: "Geometry",
       }),
     ).rejects.toThrow("OpenAI quiz response is not valid JSON.");

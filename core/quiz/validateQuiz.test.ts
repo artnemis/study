@@ -25,8 +25,10 @@ describe("validateQuiz", () => {
           explanation: "Because.",
           options: ["A", "B", "C", "D"],
           prompt: "What is correct?",
+          type: "multiple-choice",
         },
       ],
+      template: "multiple-choice",
       topic: "Algebra",
     });
   });
@@ -131,6 +133,7 @@ describe("validateQuiz", () => {
       questions: [
         {
           correctAnswer: "A",
+          type: "multiple-choice",
         },
       ],
     });
@@ -144,5 +147,51 @@ describe("validateQuiz", () => {
         topic: "Logic",
       }),
     ).toThrow("Quiz question is invalid.");
+  });
+
+  it("supports mixed quizzes with per-question type", () => {
+    expect(
+      validateQuiz({
+        difficulty: "medium",
+        questions: [
+          {
+            correctAnswer: "A",
+            explanation: "Because.",
+            options: ["A", "B", "C", "D"],
+            prompt: "Multiple choice question?",
+            type: "multiple-choice",
+          },
+          {
+            correctAnswer: "A concise explanation",
+            explanation: "Because.",
+            options: [],
+            prompt: "Explain the principle.",
+            type: "free-response",
+          },
+        ],
+        template: "mixed",
+        topic: "Logic",
+      }),
+    ).toEqual({
+      difficulty: "medium",
+      questions: [
+        {
+          correctAnswer: "A",
+          explanation: "Because.",
+          options: ["A", "B", "C", "D"],
+          prompt: "Multiple choice question?",
+          type: "multiple-choice",
+        },
+        {
+          correctAnswer: "A concise explanation",
+          explanation: "Because.",
+          options: [],
+          prompt: "Explain the principle.",
+          type: "free-response",
+        },
+      ],
+      template: "mixed",
+      topic: "Logic",
+    });
   });
 });

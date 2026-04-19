@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 
-import type { AppUser, UserRepository, UserSettings } from "@/core/auth/auth.types";
+import type { AppUser, UserRepository } from "@/core/auth/auth.types";
 
 interface SerializedUser {
   id: string;

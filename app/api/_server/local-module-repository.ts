@@ -3,10 +3,14 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 
 import type {
+  CreateMaterialRecord,
   ModuleInvite,
   ModuleMember,
   ModuleRepository,
+  ModuleSection,
+  StudyMaterial,
   StudyModule,
+  UpdateMaterialTopicsRecord,
 } from "@/core/module/module.types";
 
 interface LocalStoreFile {
@@ -22,6 +26,20 @@ interface SerializedStudyModule {
   visibility: StudyModule["visibility"];
   ownerId: string;
   createdAt: string;
+  curriculum: ModuleSection[];
+  materials: SerializedStudyMaterial[];
+}
+
+interface SerializedStudyMaterial {
+  id: string;
+  moduleId: string;
+  filename: string;
+  mimeType: string;
+  contentPreview: string | null;
+  sizeBytes: number;
+  extractedTopics: string[];
+  estimatedTokens: number;
+  uploadedAt: string;
 }
 
 interface SerializedModuleMember {
@@ -63,6 +81,34 @@ export function createLocalModuleRepository(): ModuleRepository {
 
       return deserializeMember(serializedMember);
     },
+    addMaterial: async (input: CreateMaterialRecord) => {
+      const store = await readStore();
+      const moduleIndex = store.modules.findIndex((entry) => entry.id === input.moduleId);
+
+      if (moduleIndex < 0) {
+        throw new Error("Module not found.");
+      }
+
+      const material: StudyMaterial = {
+        contentPreview: input.contentPreview ?? null,
+        estimatedTokens: input.estimatedTokens,
+        extractedTopics: [],
+        filename: input.filename,
+        id: randomUUID(),
+        mimeType: input.mimeType,
+        moduleId: input.moduleId,
+        sizeBytes: input.sizeBytes,
+        uploadedAt: input.uploadedAt,
+      };
+
+      store.modules[moduleIndex] = {
+        ...store.modules[moduleIndex],
+        materials: [...(store.modules[moduleIndex].materials ?? []), serializeMaterial(material)],
+      };
+      await writeStore(store);
+
+      return material;
+    },
     createInvite: async (input) => {
       const store = await readStore();
       const invite: ModuleInvite = {
@@ -85,8 +131,10 @@ export function createLocalModuleRepository(): ModuleRepository {
       const store = await readStore();
       const studyModule: StudyModule = {
         createdAt: input.createdAt,
+        curriculum: [],
         description: input.description,
         id: randomUUID(),
+        materials: [],
         name: input.name,
         ownerId: input.ownerId,
         visibility: input.visibility,
@@ -149,6 +197,38 @@ export function createLocalModuleRepository(): ModuleRepository {
 
       return deserializeInvite(updatedInvite);
     },
+    updateMaterialTopics: async (input: UpdateMaterialTopicsRecord) => {
+      const store = await readStore();
+      const moduleIndex = store.modules.findIndex((entry) => entry.id === input.moduleId);
+
+      if (moduleIndex < 0) {
+        throw new Error("Module not found.");
+      }
+
+      const materialIndex = (store.modules[moduleIndex].materials ?? []).findIndex(
+        (entry) => entry.id === input.materialId,
+      );
+
+      if (materialIndex < 0) {
+        throw new Error("Material not found.");
+      }
+
+      const updatedMaterial: SerializedStudyMaterial = {
+        ...store.modules[moduleIndex].materials[materialIndex],
+        extractedTopics: input.extractedTopics,
+      };
+
+      const nextMaterials = [...store.modules[moduleIndex].materials];
+      nextMaterials[materialIndex] = updatedMaterial;
+      store.modules[moduleIndex] = {
+        ...store.modules[moduleIndex],
+        materials: nextMaterials,
+      };
+
+      await writeStore(store);
+
+      return deserializeMaterial(updatedMaterial);
+    },
   };
 }
 
@@ -193,8 +273,10 @@ function createSeedStore(): LocalStoreFile {
     modules: [
       serializeModule({
         createdAt,
+        curriculum: [],
         description: "Matrices, determinants, eigenspaces and solved oral-exam prompts.",
         id: moduleId,
+        materials: [],
         name: "Linear Algebra Sprint",
         ownerId: "demo-owner",
         visibility: "public",
@@ -206,8 +288,10 @@ function createSeedStore(): LocalStoreFile {
 function serializeModule(studyModule: StudyModule): SerializedStudyModule {
   return {
     createdAt: studyModule.createdAt.toISOString(),
+    curriculum: studyModule.curriculum ?? [],
     description: studyModule.description,
     id: studyModule.id,
+    materials: (studyModule.materials ?? []).map((material) => serializeMaterial(material)),
     name: studyModule.name,
     ownerId: studyModule.ownerId,
     visibility: studyModule.visibility,
@@ -217,11 +301,41 @@ function serializeModule(studyModule: StudyModule): SerializedStudyModule {
 function deserializeModule(studyModule: SerializedStudyModule): StudyModule {
   return {
     createdAt: new Date(studyModule.createdAt),
+    curriculum: studyModule.curriculum ?? [],
     description: studyModule.description,
     id: studyModule.id,
+    materials: (studyModule.materials ?? []).map((material) => deserializeMaterial(material)),
     name: studyModule.name,
     ownerId: studyModule.ownerId,
     visibility: studyModule.visibility,
+  };
+}
+
+function serializeMaterial(material: StudyMaterial): SerializedStudyMaterial {
+  return {
+    contentPreview: material.contentPreview,
+    estimatedTokens: material.estimatedTokens,
+    extractedTopics: material.extractedTopics,
+    filename: material.filename,
+    id: material.id,
+    mimeType: material.mimeType,
+    moduleId: material.moduleId,
+    sizeBytes: material.sizeBytes,
+    uploadedAt: material.uploadedAt.toISOString(),
+  };
+}
+
+function deserializeMaterial(material: SerializedStudyMaterial): StudyMaterial {
+  return {
+    contentPreview: material.contentPreview ?? null,
+    estimatedTokens: material.estimatedTokens,
+    extractedTopics: material.extractedTopics,
+    filename: material.filename,
+    id: material.id,
+    mimeType: material.mimeType,
+    moduleId: material.moduleId,
+    sizeBytes: material.sizeBytes,
+    uploadedAt: new Date(material.uploadedAt),
   };
 }
 

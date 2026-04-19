@@ -41,6 +41,7 @@ function normalizeGeneratePlanInput(input: GeneratePlanInput): GeneratePlanInput
   return {
     dailyStudyMinutes: input.dailyStudyMinutes,
     examDate,
+    template: input.template ?? "mixed",
     topics,
   };
 }

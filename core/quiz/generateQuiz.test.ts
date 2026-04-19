@@ -37,14 +37,17 @@ describe("generateQuiz", () => {
           explanation: "Because.",
           options: ["A", "B", "C", "D"],
           prompt: "Question?",
+          type: "multiple-choice",
         },
       ],
+      template: "multiple-choice",
       topic: "Algebra",
     });
 
     expect(aiProvider.generateQuiz).toHaveBeenCalledWith({
       difficulty: "hard",
       previousMistakes: ["fractions", "equations"],
+      template: "multiple-choice",
       topic: "Algebra",
     });
   });

@@ -30,8 +30,10 @@ describe("createPostgresModuleRepository", () => {
       }),
     ).resolves.toEqual({
       createdAt: FIXED_DATE,
+      curriculum: [],
       description: "Linear algebra notes",
       id: "module-1",
+      materials: [],
       name: "Linear Algebra",
       ownerId: "user-1",
       visibility: "public",
@@ -117,6 +119,7 @@ describe("createPostgresModuleRepository", () => {
           },
         ],
       })
+      .mockResolvedValueOnce({ rows: [] })
       .mockResolvedValueOnce({ rows: [] });
     const repository = createPostgresModuleRepository(execute);
 
@@ -227,6 +230,66 @@ describe("createPostgresModuleRepository", () => {
     await expect(repository.markInviteAsAccepted("invite-1", FIXED_DATE)).resolves.toMatchObject({
       acceptedAt: FIXED_DATE,
       id: "invite-1",
+    });
+  });
+
+  it("stores materials and updates extracted topics", async () => {
+    const execute = vi
+      .fn<SqlExecutor>()
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            estimated_tokens: 1200,
+            extracted_topics: [],
+            filename: "notes.txt",
+            id: "material-1",
+            mime_type: "text/plain",
+            module_id: "module-1",
+            size_bytes: 4800,
+            uploaded_at: FIXED_DATE.toISOString(),
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            estimated_tokens: 1200,
+            extracted_topics: ["Matrices", "Eigenvalues"],
+            filename: "notes.txt",
+            id: "material-1",
+            mime_type: "text/plain",
+            module_id: "module-1",
+            size_bytes: 4800,
+            uploaded_at: FIXED_DATE.toISOString(),
+          },
+        ],
+      });
+    const repository = createPostgresModuleRepository(execute);
+
+    await expect(
+      repository.addMaterial({
+        estimatedTokens: 1200,
+        filename: "notes.txt",
+        mimeType: "text/plain",
+        moduleId: "module-1",
+        sizeBytes: 4800,
+        uploadedAt: FIXED_DATE,
+      }),
+    ).resolves.toMatchObject({
+      estimatedTokens: 1200,
+      filename: "notes.txt",
+      moduleId: "module-1",
+    });
+
+    await expect(
+      repository.updateMaterialTopics({
+        extractedTopics: ["Matrices", "Eigenvalues"],
+        materialId: "material-1",
+        moduleId: "module-1",
+      }),
+    ).resolves.toMatchObject({
+      extractedTopics: ["Matrices", "Eigenvalues"],
+      id: "material-1",
     });
   });
 });

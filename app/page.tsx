@@ -5,6 +5,9 @@ import { useT } from "@/lib/i18n/context";
 
 export default function Home() {
   const t = useT();
+  const titleWords = t.landing_title.split(" ");
+  const highlightedWord = titleWords.at(-1) ?? t.landing_title;
+  const titleLead = titleWords.slice(0, -1).join(" ");
 
   const features = [
     {
@@ -41,9 +44,13 @@ export default function Home() {
           Open Source &middot; MIT License
         </span>
         <h1 className="max-w-3xl text-5xl font-bold tracking-[-0.06em] text-slate-950 sm:text-6xl lg:text-7xl">
-          {t.landing_title.split(" ").slice(0, -1).join(" ")}
-          <br />
-          <span className="text-[var(--accent)]">{t.landing_title.split(" ").slice(-1)[0]}</span>
+          {titleLead.length > 0 ? (
+            <>
+              {titleLead}
+              <br />
+            </>
+          ) : null}
+          <span className="text-(--accent)">{highlightedWord}</span>
         </h1>
         <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
           {t.landing_subtitle}

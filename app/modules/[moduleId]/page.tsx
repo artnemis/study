@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { type FormEvent, use, useState } from "react";
 import { useSession } from "next-auth/react";
-import { acceptInviteApi, createInviteApi, getModuleApi } from "@/app/_lib/api-client";
+import { acceptInviteApi, createInviteApi } from "@/app/_lib/api-client";
+import { getDisplayCurriculum } from "@/core/module/module-curriculum";
 import { useModule } from "@/hooks/useModule";
 import { useT } from "@/lib/i18n/context";
 import type { ModuleInvite } from "@/core/module/module.types";
@@ -14,19 +15,18 @@ import {
   Metric,
   Panel,
   fieldClassName,
-  primaryButtonClassName,
   secondaryButtonClassName,
   toMessage,
 } from "@/app/_components/ui";
 
 export default function ModuleDetailPage(props: { params: Promise<{ moduleId: string }> }) {
   const { moduleId } = use(props.params);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const userId = session?.user?.id ?? null;
   const t = useT();
   const moduleDetails = useModule(moduleId, {
     enabled: true,
-    fetcher: async (id) => getModuleApi(id, userId),
+    requesterId: userId,
   });
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +58,7 @@ export default function ModuleDetailPage(props: { params: Promise<{ moduleId: st
     if (!userId) return;
     setIsSubmitting(true);
     try {
-      const result = await acceptInviteApi({ token: acceptForm.token, userId });
+      await acceptInviteApi({ token: acceptForm.token, userId });
       setAcceptForm({ token: "" });
       setFeedback(t.detail_inviteSent);
       await moduleDetails.reload();
@@ -70,6 +70,8 @@ export default function ModuleDetailPage(props: { params: Promise<{ moduleId: st
   }
 
   const mod = moduleDetails.module;
+  const curriculum = mod ? getDisplayCurriculum(mod) : [];
+  const isAuthenticated = status === "authenticated" && !!userId;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-10">
@@ -118,43 +120,77 @@ export default function ModuleDetailPage(props: { params: Promise<{ moduleId: st
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Create invite */}
             <Panel title={t.detail_invite}>
-              <form className="space-y-3" onSubmit={onCreateInvite}>
-                <Field label={t.detail_email}>
-                  <input className={fieldClassName} value={inviteForm.email} onChange={(e) => setInviteForm((f) => ({ ...f, email: e.target.value }))} placeholder="user@example.com" />
-                </Field>
-                <Field label={t.detail_role}>
-                  <select className={fieldClassName} value={inviteForm.role} onChange={(e) => setInviteForm((f) => ({ ...f, role: e.target.value as "editor" | "viewer" }))}>
-                    <option value="viewer">Viewer</option>
-                    <option value="editor">Editor</option>
-                  </select>
-                </Field>
-                <button disabled={isSubmitting} className={secondaryButtonClassName} type="submit">
-                  {isSubmitting ? t.detail_sending : t.detail_sendInvite}
-                </button>
-                {inviteResult ? (
-                  <div className="rounded-2xl border border-amber-900/10 bg-amber-50 p-4 text-sm text-amber-950">
-                    <div className="font-semibold">{t.detail_copyToken}</div>
-                    <div className="mt-1 break-all font-mono text-xs">{inviteResult.token}</div>
-                  </div>
-                ) : null}
-              </form>
+              {isAuthenticated ? (
+                <form className="space-y-3" onSubmit={onCreateInvite}>
+                  <Field label={t.detail_email}>
+                    <input className={fieldClassName} value={inviteForm.email} onChange={(e) => setInviteForm((f) => ({ ...f, email: e.target.value }))} placeholder="user@example.com" />
+                  </Field>
+                  <Field label={t.detail_role}>
+                    <select className={fieldClassName} value={inviteForm.role} onChange={(e) => setInviteForm((f) => ({ ...f, role: e.target.value as "editor" | "viewer" }))}>
+                      <option value="viewer">Viewer</option>
+                      <option value="editor">Editor</option>
+                    </select>
+                  </Field>
+                  <button disabled={isSubmitting} className={secondaryButtonClassName} type="submit">
+                    {isSubmitting ? t.detail_sending : t.detail_sendInvite}
+                  </button>
+                  {inviteResult ? (
+                    <div className="rounded-2xl border border-amber-900/10 bg-amber-50 p-4 text-sm text-amber-950">
+                      <div className="font-semibold">{t.detail_copyToken}</div>
+                      <div className="mt-1 break-all font-mono text-xs">{inviteResult.token}</div>
+                    </div>
+                  ) : null}
+                </form>
+              ) : (
+                <div className="space-y-3 text-sm text-slate-600">
+                  <p>{t.common_signInRequired}</p>
+                  <Link href="/auth/sign-in" className={secondaryButtonClassName}>
+                    {t.auth_signIn}
+                  </Link>
+                </div>
+              )}
             </Panel>
 
             {/* Accept invite */}
-            <Panel title={t.detail_invite}>
-              <form className="space-y-3" onSubmit={onAcceptInvite}>
-                <Field label="Token">
-                  <input className={fieldClassName} value={acceptForm.token} onChange={(e) => setAcceptForm((f) => ({ ...f, token: e.target.value }))} />
-                </Field>
-                <button disabled={isSubmitting} className={secondaryButtonClassName} type="submit">
-                  {t.detail_sendInvite}
-                </button>
-              </form>
+            <Panel title={t.detail_acceptInvite}>
+              {isAuthenticated ? (
+                <form className="space-y-3" onSubmit={onAcceptInvite}>
+                  <Field label="Token">
+                    <input className={fieldClassName} value={acceptForm.token} onChange={(e) => setAcceptForm((f) => ({ ...f, token: e.target.value }))} />
+                  </Field>
+                  <button disabled={isSubmitting} className={secondaryButtonClassName} type="submit">
+                    {t.detail_acceptInvite}
+                  </button>
+                </form>
+              ) : (
+                <div className="space-y-3 text-sm text-slate-600">
+                  <p>{t.common_signInRequired}</p>
+                  <Link href="/auth/sign-in" className={secondaryButtonClassName}>
+                    {t.auth_signIn}
+                  </Link>
+                </div>
+              )}
             </Panel>
           </div>
 
           {/* Quick links */}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Link
+              href={`/modules/${encodeURIComponent(mod.id)}/curriculum`}
+              className="group rounded-3xl border border-black/8 bg-white/90 p-5 text-center backdrop-blur transition hover:border-teal-500/30 hover:shadow-lg"
+            >
+              <div className="mb-2 text-2xl">📚</div>
+              <h3 className="font-semibold text-slate-950 group-hover:text-teal-800">{t.curr_title}</h3>
+              <p className="mt-1 text-xs text-slate-500">{curriculum.length} {t.curr_section.toLowerCase()}</p>
+            </Link>
+            <Link
+              href={`/modules/${encodeURIComponent(mod.id)}/materials`}
+              className="group rounded-3xl border border-black/8 bg-white/90 p-5 text-center backdrop-blur transition hover:border-teal-500/30 hover:shadow-lg"
+            >
+              <div className="mb-2 text-2xl">📄</div>
+              <h3 className="font-semibold text-slate-950 group-hover:text-teal-800">{t.mat_title}</h3>
+              <p className="mt-1 text-xs text-slate-500">{mod.materials?.length ?? 0} file</p>
+            </Link>
             <Link
               href={`/quiz?topic=${encodeURIComponent(mod.name)}`}
               className="group rounded-3xl border border-black/8 bg-white/90 p-5 text-center backdrop-blur transition hover:border-teal-500/30 hover:shadow-lg"

@@ -4,13 +4,37 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useModuleCatalog } from "@/hooks/useModuleCatalog";
 import { useT } from "@/lib/i18n/context";
-import { Badge, Metric, Panel } from "@/app/_components/ui";
+import { Badge, Metric, Panel, primaryButtonClassName } from "@/app/_components/ui";
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const userId = session?.user?.id ?? null;
   const catalog = useModuleCatalog(userId);
   const t = useT();
+
+  if (status === "loading") {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-4 py-8 sm:px-6 lg:px-10">
+        <p className="text-sm text-slate-500">{t.common_loading}</p>
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return (
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-10">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">{t.dash_title}</h1>
+          <p className="text-sm text-slate-600">{t.dash_subtitle}</p>
+        </div>
+        <Panel title={t.auth_signIn} subtitle={t.common_signInRequired}>
+          <Link href="/auth/sign-in" className={primaryButtonClassName}>
+            {t.auth_signIn}
+          </Link>
+        </Panel>
+      </div>
+    );
+  }
 
   const quickActions = [
     { href: "/modules", label: t.dash_newModule, description: t.landing_feature1_desc, icon: "📚" },

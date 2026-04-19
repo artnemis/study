@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { type FormEvent, useEffect, useState } from "react";
 import { useLocale, useT } from "@/lib/i18n/context";
@@ -103,8 +104,13 @@ export default function ProfilePage() {
 
   if (!session?.user) {
     return (
-      <div className="mx-auto flex w-full max-w-3xl flex-1 items-center justify-center">
-        <p className="text-sm text-slate-500">{t.auth_signIn}</p>
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-10">
+        <PageHeader title={t.profile_title} subtitle={t.profile_subtitle} />
+        <Panel title={t.auth_signIn} subtitle={t.common_signInRequired}>
+          <Link href="/auth/sign-in" className={primaryButtonClassName}>
+            {t.auth_signIn}
+          </Link>
+        </Panel>
       </div>
     );
   }

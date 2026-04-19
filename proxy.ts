@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 const PUBLIC_FILE_PATTERN = /\.[^/]+$/;
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (process.env.COMING_SOON_ENABLED !== "true") {
     return NextResponse.next();
   }

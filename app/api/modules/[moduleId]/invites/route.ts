@@ -1,6 +1,8 @@
+import { auth } from "@/auth";
 import { createInvite } from "@/core/module/invite.service";
 import type { InvitableModuleRole } from "@/core/module/module.types";
 
+import { requireModulePermission } from "../../../_server/module-access";
 import { getModuleRepository } from "../../../_server/module-repository";
 import { jsonResponse, readJsonObject, toErrorResponse } from "../../../_server/http";
 
@@ -11,7 +13,14 @@ export async function POST(
   context: { params: Promise<{ moduleId: string }> },
 ) {
   try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return jsonResponse({ error: "Authentication required." }, 401);
+    }
+
     const { moduleId } = await context.params;
+    await requireModulePermission(moduleId, session.user.id, "updateConfig");
     const payload = await readJsonObject(request);
     const invite = await createInvite(
       {

@@ -1,6 +1,6 @@
-import type { CreateModuleResult, ModuleDetails, ModuleInvite, StudyModule } from "@/core/module/module.types";
-import type { StudyPlan } from "@/core/plan/plan.types";
-import type { Quiz, QuizDifficulty } from "@/core/quiz/quiz.types";
+import type { CreateModuleResult, ModuleDetails, ModuleInvite, StudyMaterial, StudyModule } from "@/core/module/module.types";
+import type { StudyPlan, PlanTemplate } from "@/core/plan/plan.types";
+import type { Quiz, QuizDifficulty, QuizTemplate } from "@/core/quiz/quiz.types";
 
 export interface CatalogResponse {
   modules: StudyModule[];
@@ -17,14 +17,21 @@ export interface PlanResponse {
   plan: StudyPlan;
 }
 
-export async function listModulesApi(requesterId: string | null): Promise<CatalogResponse> {
-  const url = new URL("/api/modules", window.location.origin);
+export interface MaterialUploadResponse {
+  material: StudyMaterial;
+}
 
-  if (requesterId?.trim()) {
-    url.searchParams.set("requesterId", requesterId.trim());
-  }
+export interface MaterialTopicsResponse {
+  estimatedCost: string;
+  estimatedTokens: number;
+  material: StudyMaterial | null;
+  moduleId: string;
+  topics: string[];
+}
 
-  const response = await requestJson<CatalogResponse>(url.toString(), {
+export async function listModulesApi(_requesterId: string | null): Promise<CatalogResponse> {
+  void _requesterId;
+  const response = await requestJson<CatalogResponse>(new URL("/api/modules", window.location.origin).toString(), {
     cache: "no-store",
   });
 
@@ -34,12 +41,9 @@ export async function listModulesApi(requesterId: string | null): Promise<Catalo
   };
 }
 
-export async function getModuleApi(moduleId: string, requesterId: string | null): Promise<ModuleDetails> {
+export async function getModuleApi(moduleId: string, _requesterId: string | null): Promise<ModuleDetails> {
+  void _requesterId;
   const url = new URL(`/api/modules/${encodeURIComponent(moduleId)}`, window.location.origin);
-
-  if (requesterId?.trim()) {
-    url.searchParams.set("requesterId", requesterId.trim());
-  }
 
   const response = await requestJson<ModuleDetails>(url.toString(), {
     cache: "no-store",
@@ -102,9 +106,39 @@ export async function acceptInviteApi(input: { token: string; userId: string }) 
   };
 }
 
+export async function uploadModuleMaterialApi(moduleId: string, file: File): Promise<MaterialUploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await requestJson<MaterialUploadResponse>(`/api/modules/${encodeURIComponent(moduleId)}/materials`, {
+    body: formData,
+    method: "POST",
+  });
+
+  return {
+    material: normalizeStudyMaterial(response.material),
+  };
+}
+
+export async function extractMaterialTopicsApi(moduleId: string, materialId: string): Promise<MaterialTopicsResponse> {
+  const response = await requestJson<MaterialTopicsResponse>(`/api/modules/${encodeURIComponent(moduleId)}/topics`, {
+    body: JSON.stringify({ materialId }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+
+  return {
+    ...response,
+    material: response.material ? normalizeStudyMaterial(response.material) : null,
+  };
+}
+
 export async function generateQuizApi(input: {
   difficulty: QuizDifficulty;
   previousMistakes: string[];
+  template?: QuizTemplate;
   topic: string;
 }): Promise<QuizResponse> {
   return requestJson<QuizResponse>("/api/quizzes", {
@@ -119,6 +153,7 @@ export async function generateQuizApi(input: {
 export async function generatePlanApi(input: {
   dailyStudyMinutes: number;
   examDate: string;
+  template?: PlanTemplate;
   topics: string[];
 }): Promise<PlanResponse> {
   return requestJson<PlanResponse>("/api/plans", {
@@ -152,6 +187,14 @@ function normalizeStudyModule(module: StudyModule): StudyModule {
   return {
     ...module,
     createdAt: new Date(module.createdAt),
+    materials: (module.materials ?? []).map(normalizeStudyMaterial),
+  };
+}
+
+function normalizeStudyMaterial(material: StudyMaterial): StudyMaterial {
+  return {
+    ...material,
+    uploadedAt: new Date(material.uploadedAt),
   };
 }
 

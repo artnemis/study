@@ -47,8 +47,10 @@ describe("createModule", () => {
     expect(result).toEqual({
       module: {
         createdAt: FIXED_DATE,
+        curriculum: [],
         description: "Comprehensive notes for topology.",
         id: "module-1",
+        materials: [],
         name: "Topology 101",
         ownerId: "user-123",
         visibility: "private",
@@ -140,8 +142,10 @@ describe("getModuleById", () => {
       ),
     ).resolves.toEqual({
       createdAt: FIXED_DATE,
+      curriculum: [],
       description: "Comprehensive notes for topology.",
       id: "module-1",
+      materials: [],
       members: [
         {
           createdAt: FIXED_DATE,
@@ -160,8 +164,10 @@ describe("getModuleById", () => {
     const repository = createRepositoryDouble({
       getModuleById: vi.fn(async () => ({
         createdAt: FIXED_DATE,
+        curriculum: [],
         description: "Private notes",
         id: "module-1",
+        materials: [],
         name: "Topology 101",
         ownerId: "user-123",
         visibility: "private",
@@ -186,8 +192,10 @@ describe("getModuleById", () => {
     const repository = createRepositoryDouble({
       getModuleById: vi.fn(async () => ({
         createdAt: FIXED_DATE,
+        curriculum: [],
         description: "Private notes",
         id: "module-1",
+        materials: [],
         name: "Topology 101",
         ownerId: "user-123",
         visibility: "private",
@@ -265,8 +273,10 @@ describe("listModules", () => {
     ).resolves.toEqual([
       {
         createdAt: FIXED_DATE,
+        curriculum: [],
         description: "Comprehensive notes for topology.",
         id: "module-1",
+        materials: [],
         name: "Topology 101",
         ownerId: "user-123",
         visibility: "public",
@@ -296,19 +306,28 @@ describe("listModules", () => {
 function createRepositoryDouble(overrides?: Partial<ModuleRepository>): ModuleRepository {
   return {
     addMember: vi.fn(async (member: ModuleMember) => member),
+    addMaterial: vi.fn(async (input) => ({
+      ...input,
+      extractedTopics: [],
+      id: "material-1",
+    })),
     createInvite: vi.fn(async (input: CreateInviteRecord): Promise<ModuleInvite> => ({
       ...input,
       id: "invite-1",
     })),
     createModule: vi.fn(async (input: CreateModuleRecord): Promise<StudyModule> => ({
       ...input,
+      curriculum: [],
       id: "module-1",
+      materials: [],
     })),
     findInviteByToken: vi.fn(async () => null),
     getModuleById: vi.fn(async () => ({
       createdAt: FIXED_DATE,
+      curriculum: [],
       description: "Comprehensive notes for topology.",
       id: "module-1",
+      materials: [],
       name: "Topology 101",
       ownerId: "user-123",
       visibility: "public",
@@ -317,8 +336,10 @@ function createRepositoryDouble(overrides?: Partial<ModuleRepository>): ModuleRe
     listModules: vi.fn(async () => [
       {
         createdAt: FIXED_DATE,
+        curriculum: [],
         description: "Comprehensive notes for topology.",
         id: "module-1",
+        materials: [],
         name: "Topology 101",
         ownerId: "user-123",
         visibility: "public",
@@ -341,6 +362,16 @@ function createRepositoryDouble(overrides?: Partial<ModuleRepository>): ModuleRe
       moduleId: "module-1",
       role: "viewer",
       token: "invite-token",
+    })),
+    updateMaterialTopics: vi.fn(async () => ({
+      estimatedTokens: 100,
+      extractedTopics: ["Topic"],
+      filename: "notes.txt",
+      id: "material-1",
+      mimeType: "text/plain",
+      moduleId: "module-1",
+      sizeBytes: 400,
+      uploadedAt: FIXED_DATE,
     })),
     ...overrides,
   };

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import type { Dictionary, Locale } from "./index";
 import { LOCALES, DEFAULT_LOCALE } from "./index";
 
@@ -44,13 +44,10 @@ function writeCookieLocale(locale: Locale) {
 }
 
 export function LocaleProvider({ children, initialLocale }: { children: ReactNode; initialLocale?: Locale }) {
-  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? DEFAULT_LOCALE);
+  const [locale, setLocaleState] = useState<Locale>(() => initialLocale ?? readCookieLocale());
 
-  useEffect(() => {
-    if (!initialLocale) {
-      setLocaleState(readCookieLocale());
-    }
-  }, [initialLocale]);
+  // Read cookie locale on mount via lazy init in useState above;
+  // no effect needed for SSR fallback.
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);

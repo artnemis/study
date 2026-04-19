@@ -63,6 +63,7 @@ describe("generatePlan", () => {
     expect(aiProvider.generatePlan).toHaveBeenCalledWith({
       dailyStudyMinutes: 90,
       examDate: "2026-05-10",
+      template: "mixed",
       topics: ["Logic"],
     });
   });

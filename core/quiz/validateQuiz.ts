@@ -1,4 +1,4 @@
-import { QUIZ_DIFFICULTIES, type Quiz, type QuizDifficulty, type QuizQuestion } from "./quiz.types";
+import { QUIZ_DIFFICULTIES, QUIZ_TEMPLATES, type Quiz, type QuizDifficulty, type QuizQuestion, type QuizTemplate } from "./quiz.types";
 
 export function validateQuiz(input: unknown): Quiz {
   if (!isRecord(input)) {
@@ -7,6 +7,7 @@ export function validateQuiz(input: unknown): Quiz {
 
   const topic = normalizeRequiredString(input.topic, "Quiz topic is required.");
   const difficulty = normalizeDifficulty(input.difficulty);
+  const template = normalizeTemplate(input.template);
   const rawQuestions = input.questions;
 
   if (!Array.isArray(rawQuestions) || rawQuestions.length === 0) {
@@ -15,9 +16,17 @@ export function validateQuiz(input: unknown): Quiz {
 
   return {
     difficulty,
-    questions: rawQuestions.map((question) => validateQuestion(question)),
+    questions: rawQuestions.map((question) => validateQuestion(question, template)),
+    template,
     topic,
   };
+}
+
+function normalizeTemplate(value: unknown): QuizTemplate {
+  if (typeof value === "string" && QUIZ_TEMPLATES.includes(value as QuizTemplate)) {
+    return value as QuizTemplate;
+  }
+  return "multiple-choice";
 }
 
 function normalizeDifficulty(value: unknown): QuizDifficulty {
@@ -28,13 +37,27 @@ function normalizeDifficulty(value: unknown): QuizDifficulty {
   return value as QuizDifficulty;
 }
 
-function validateQuestion(question: unknown): QuizQuestion {
+function validateQuestion(question: unknown, template: QuizTemplate): QuizQuestion {
   if (!isRecord(question)) {
     throw new Error("Quiz question is invalid.");
   }
 
   const prompt = normalizeRequiredString(question.prompt, "Question prompt is required.");
   const explanation = normalizeRequiredString(question.explanation, "Question explanation is required.");
+
+  const type = normalizeQuestionType(question.type, question.options, template);
+
+  if (type === "free-response") {
+    const correctAnswer = normalizeRequiredString(question.correctAnswer, "Each question must have exactly 1 correct answer.");
+    return {
+      correctAnswer,
+      explanation,
+      options: [],
+      prompt,
+      type: "free-response",
+    };
+  }
+
   const correctAnswer = normalizeCorrectAnswer(question.correctAnswer);
   const options = normalizeOptions(question.options);
 
@@ -47,7 +70,32 @@ function validateQuestion(question: unknown): QuizQuestion {
     explanation,
     options,
     prompt,
+    type: "multiple-choice",
   };
+}
+
+function normalizeQuestionType(
+  value: unknown,
+  options: unknown,
+  template: QuizTemplate,
+): QuizQuestion["type"] {
+  if (template === "free-response") {
+    return "free-response";
+  }
+
+  if (template === "multiple-choice") {
+    return "multiple-choice";
+  }
+
+  if (value === "free-response" || value === "multiple-choice") {
+    return value;
+  }
+
+  if (Array.isArray(options) && options.length === 0) {
+    return "free-response";
+  }
+
+  return "multiple-choice";
 }
 
 function normalizeCorrectAnswer(value: unknown): string {

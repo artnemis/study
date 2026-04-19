@@ -31,11 +31,17 @@ export function toErrorResponse(error: unknown): Response {
 }
 
 function inferStatusCode(message: string): number {
+  const normalizedMessage = message.toLowerCase();
+
+  if (normalizedMessage.includes("authentication required") || normalizedMessage.includes("unauthorized")) {
+    return 401;
+  }
+
   if (message.includes("not found")) {
     return 404;
   }
 
-  if (message.includes("requires membership")) {
+  if (message.includes("requires membership") || normalizedMessage.includes("permission")) {
     return 403;
   }
 

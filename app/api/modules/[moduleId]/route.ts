@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { getModuleById } from "@/core/module/module.service";
 
 import { getModuleRepository, getStorageMode } from "../../_server/module-repository";
@@ -11,12 +12,12 @@ export async function GET(
   context: { params: Promise<{ moduleId: string }> },
 ) {
   try {
+    const session = await auth();
     const { moduleId } = await context.params;
-    const url = new URL(request.url);
     const studyModule = await getModuleById(
       {
         moduleId,
-        requesterId: url.searchParams.get("requesterId"),
+        requesterId: session?.user?.id ?? null,
       },
       {
         now: () => new Date(),

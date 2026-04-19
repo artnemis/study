@@ -67,8 +67,23 @@ async function ensureSchema(activePool: Pool): Promise<void> {
           accepted_at timestamptz null
         );
 
+        create table if not exists study_materials (
+          id text primary key,
+          module_id text not null references study_modules(id) on delete cascade,
+          filename text not null,
+          mime_type text not null,
+          content_preview text null,
+          size_bytes integer not null,
+          extracted_topics text[] not null default '{}',
+          estimated_tokens integer not null,
+          uploaded_at timestamptz not null
+        );
+
+        alter table study_materials add column if not exists content_preview text null;
+
         create index if not exists idx_module_members_user_id on module_members(user_id);
         create index if not exists idx_module_invites_token on module_invites(token);
+        create index if not exists idx_study_materials_module_id on study_materials(module_id);
       `);
     })();
   }

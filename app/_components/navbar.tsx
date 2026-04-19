@@ -14,13 +14,19 @@ export function Navbar() {
     return null;
   }
 
-  const links = [
-    { href: "/dashboard", label: t.nav_dashboard },
-    { href: "/modules", label: t.nav_modules },
-    { href: "/quiz", label: t.nav_quiz },
-    { href: "/plans", label: t.nav_plans },
-    { href: "/profile", label: t.nav_profile },
-  ];
+  const links = session?.user
+    ? [
+        { href: "/dashboard", label: t.nav_dashboard },
+        { href: "/modules", label: t.nav_modules },
+        { href: "/quiz", label: t.nav_quiz },
+        { href: "/plans", label: t.nav_plans },
+        { href: "/profile", label: t.nav_profile },
+      ]
+    : [
+        { href: "/modules", label: t.nav_modules },
+        { href: "/quiz", label: t.nav_quiz },
+        { href: "/plans", label: t.nav_plans },
+      ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/8 bg-white/70 backdrop-blur-xl">

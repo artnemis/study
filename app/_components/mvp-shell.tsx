@@ -13,7 +13,6 @@ import {
   createModuleApi,
   generatePlanApi,
   generateQuizApi,
-  getModuleApi,
 } from "@/app/_lib/api-client";
 import { useModule } from "@/hooks/useModule";
 import { useModuleCatalog } from "@/hooks/useModuleCatalog";
@@ -79,7 +78,7 @@ export function MvpShell() {
       : catalog.modules[0]?.id ?? null;
   const moduleDetails = useModule(activeModuleId, {
     enabled: activeModuleId !== null,
-    fetcher: async (moduleId) => getModuleApi(moduleId, requesterId),
+    requesterId,
   });
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const filteredModules = catalog.modules.filter((studyModule) => {

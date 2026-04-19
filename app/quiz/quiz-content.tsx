@@ -22,13 +22,12 @@ export default function QuizContent() {
   const [form, setForm] = useState({
     topic: searchParams.get("topic") ?? "",
     difficulty: "medium" as "easy" | "medium" | "hard",
+    template: "multiple-choice" as "multiple-choice" | "free-response" | "mixed",
     previousMistakes: "",
   });
   const [feedback, setFeedback] = useState<string | null>(null);
   const [quizResult, setQuizResult] = useState<QuizResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const difficultyLabels = { easy: t.quiz_easy, medium: t.quiz_medium, hard: t.quiz_hard };
 
   async function onGenerate(e: FormEvent) {
     e.preventDefault();
@@ -37,6 +36,7 @@ export default function QuizContent() {
       const result = await generateQuizApi({
         topic: form.topic,
         difficulty: form.difficulty,
+        template: form.template,
         previousMistakes: form.previousMistakes
           .split(",")
           .map((v) => v.trim())
@@ -69,6 +69,13 @@ export default function QuizContent() {
               <option value="hard">{t.quiz_hard}</option>
             </select>
           </Field>
+          <Field label={t.tmpl_label}>
+            <select className={fieldClassName} value={form.template} onChange={(e) => setForm((f) => ({ ...f, template: e.target.value as typeof f.template }))}>
+              <option value="multiple-choice">{t.tmpl_multipleChoice}</option>
+              <option value="free-response">{t.tmpl_freeResponse}</option>
+              <option value="mixed">{t.tmpl_mixed}</option>
+            </select>
+          </Field>
           <button disabled={isSubmitting} className={primaryButtonClassName} type="submit">
             {isSubmitting ? t.quiz_generating : t.quiz_generate}
           </button>
@@ -89,20 +96,26 @@ export default function QuizContent() {
               <h3 className="font-semibold text-slate-950">
                 {index + 1}. {question.prompt}
               </h3>
-              <ul className="mt-3 space-y-2">
-                {question.options.map((option) => (
-                  <li
-                    key={option}
-                    className={`rounded-xl px-4 py-2.5 text-sm ${
-                      option === question.correctAnswer
-                        ? "border border-teal-500/20 bg-teal-50 font-medium text-teal-950"
-                        : "border border-black/5 bg-stone-50 text-slate-700"
-                    }`}
-                  >
-                    {option}
-                  </li>
-                ))}
-              </ul>
+              {question.options.length > 0 ? (
+                <ul className="mt-3 space-y-2">
+                  {question.options.map((option) => (
+                    <li
+                      key={option}
+                      className={`rounded-xl px-4 py-2.5 text-sm ${
+                        option === question.correctAnswer
+                          ? "border border-teal-500/20 bg-teal-50 font-medium text-teal-950"
+                          : "border border-black/5 bg-stone-50 text-slate-700"
+                      }`}
+                    >
+                      {option}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="mt-3 rounded-xl border border-teal-500/20 bg-teal-50 px-4 py-2.5 text-sm font-medium text-teal-950">
+                  {question.correctAnswer}
+                </div>
+              )}
               <p className="mt-3 text-sm text-slate-600">
                 {question.explanation}
               </p>

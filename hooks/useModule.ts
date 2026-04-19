@@ -4,11 +4,9 @@ import { useEffect, useEffectEvent, useState } from "react";
 
 import type { ModuleDetails } from "@/core/module/module.types";
 
-export type ModuleFetcher = (moduleId: string) => Promise<ModuleDetails>;
-
 export interface UseModuleOptions {
   enabled?: boolean;
-  fetcher?: ModuleFetcher;
+  requesterId?: string | null;
 }
 
 export interface UseModuleResult {
@@ -23,8 +21,8 @@ export function useModule(moduleId: string | null, options: UseModuleOptions = {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const enabled = options.enabled ?? true;
-  const fetcher = options.fetcher ?? fetchModule;
-  const fetchModuleEvent = useEffectEvent(async (currentModuleId: string) => fetcher(currentModuleId));
+  const requesterId = normalizeRequesterId(options.requesterId);
+  const fetchModuleEvent = useEffectEvent(async (currentModuleId: string) => fetchModule(currentModuleId));
 
   useEffect(() => {
     let isActive = true;
@@ -70,7 +68,7 @@ export function useModule(moduleId: string | null, options: UseModuleOptions = {
     return () => {
       isActive = false;
     };
-  }, [enabled, moduleId]);
+  }, [enabled, moduleId, requesterId]);
 
   return {
     error,
@@ -88,7 +86,7 @@ export function useModule(moduleId: string | null, options: UseModuleOptions = {
       setIsLoading(true);
 
       try {
-        const nextModule = await fetcher(moduleId.trim());
+        const nextModule = await fetchModule(moduleId.trim());
         setModule(nextModule);
         setError(null);
       } catch (loadError) {
@@ -102,7 +100,9 @@ export function useModule(moduleId: string | null, options: UseModuleOptions = {
 }
 
 async function fetchModule(moduleId: string): Promise<ModuleDetails> {
-  const response = await fetch(`/api/modules/${encodeURIComponent(moduleId)}`, {
+  const url = new URL(`/api/modules/${encodeURIComponent(moduleId)}`, window.location.origin);
+
+  const response = await fetch(url.toString(), {
     cache: "no-store",
   });
 
@@ -115,4 +115,14 @@ async function fetchModule(moduleId: string): Promise<ModuleDetails> {
 
 function toError(error: unknown): Error {
   return error instanceof Error ? error : new Error("Unable to load module.");
+}
+
+function normalizeRequesterId(requesterId: string | null | undefined): string | null {
+  if (!requesterId) {
+    return null;
+  }
+
+  const normalizedRequesterId = requesterId.trim();
+
+  return normalizedRequesterId.length > 0 ? normalizedRequesterId : null;
 }

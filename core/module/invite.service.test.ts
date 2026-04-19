@@ -285,13 +285,20 @@ describe("acceptInvite", () => {
 function createRepositoryDouble(overrides?: Partial<ModuleRepository>): ModuleRepository {
   return {
     addMember: vi.fn(async (member: ModuleMember) => member),
+    addMaterial: vi.fn(async (input) => ({
+      ...input,
+      extractedTopics: [],
+      id: "material-1",
+    })),
     createInvite: vi.fn(async (input: CreateInviteRecord): Promise<ModuleInvite> => ({
       ...input,
       id: "invite-1",
     })),
     createModule: vi.fn(async (input): Promise<StudyModule> => ({
       ...input,
+      curriculum: [],
       id: "module-1",
+      materials: [],
     })),
     findInviteByToken: vi.fn(async () => null),
     getModuleById: vi.fn(async () => null),
@@ -306,6 +313,16 @@ function createRepositoryDouble(overrides?: Partial<ModuleRepository>): ModuleRe
       moduleId: "module-1",
       role: "viewer",
       token: "invite-token",
+    })),
+    updateMaterialTopics: vi.fn(async () => ({
+      estimatedTokens: 100,
+      extractedTopics: ["Topic"],
+      filename: "notes.txt",
+      id: "material-1",
+      mimeType: "text/plain",
+      moduleId: "module-1",
+      sizeBytes: 400,
+      uploadedAt: FIXED_DATE,
     })),
     ...overrides,
   };

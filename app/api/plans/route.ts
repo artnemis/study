@@ -1,4 +1,5 @@
 import { generatePlan } from "@/core/plan/generatePlan";
+import type { PlanTemplate } from "@/core/plan/plan.types";
 
 import { auth } from "@/auth";
 import { getAIMode, getAIProvider } from "../_server/ai-provider";
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
       {
         dailyStudyMinutes: Number(payload.dailyStudyMinutes ?? 0),
         examDate: String(payload.examDate ?? ""),
+        template: (String(payload.template ?? "mixed")) as PlanTemplate,
         topics: Array.isArray(payload.topics) ? payload.topics.map((value) => String(value)) : [],
       },
       {

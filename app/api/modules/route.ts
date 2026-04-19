@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { createModule, listModules } from "@/core/module/module.service";
 import type { ModuleVisibility } from "@/core/module/module.types";
 
@@ -9,10 +10,11 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   try {
-    const url = new URL(request.url);
+    void request;
+    const session = await auth();
     const modules = await listModules(
       {
-        requesterId: url.searchParams.get("requesterId"),
+        requesterId: session?.user?.id ?? null,
       },
       {
         now: () => new Date(),
@@ -31,12 +33,18 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return jsonResponse({ error: "Authentication required." }, 401);
+    }
+
     const payload = await readJsonObject(request);
     const result = await createModule(
       {
         description: String(payload.description ?? ""),
         name: String(payload.name ?? ""),
-        ownerId: String(payload.ownerId ?? ""),
+        ownerId: session.user.id,
         visibility: String(payload.visibility ?? "public") as ModuleVisibility,
       },
       {

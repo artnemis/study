@@ -1,10 +1,13 @@
 import { randomUUID } from "node:crypto";
 
 import type {
+  CreateMaterialRecord,
   ModuleInvite,
   ModuleMember,
   ModuleRepository,
   StudyModule,
+  StudyMaterial,
+  UpdateMaterialTopicsRecord,
 } from "./module.types";
 
 export interface SqlQueryResult<Row> {
@@ -43,6 +46,18 @@ interface ModuleInviteRow {
   accepted_at: Date | string | null;
 }
 
+interface StudyMaterialRow {
+  id: string;
+  module_id: string;
+  filename: string;
+  mime_type: string;
+  content_preview: string | null;
+  size_bytes: number;
+  extracted_topics: string[];
+  estimated_tokens: number;
+  uploaded_at: Date | string;
+}
+
 export function createPostgresModuleRepository(execute: SqlExecutor): ModuleRepository {
   return {
     addMember: async (member) => {
@@ -55,6 +70,27 @@ export function createPostgresModuleRepository(execute: SqlExecutor): ModuleRepo
       );
 
       return mapModuleMember(result.rows[0]);
+    },
+    addMaterial: async (input: CreateMaterialRecord) => {
+      const materialId = randomUUID();
+      const result = await execute<StudyMaterialRow>(
+        `insert into study_materials (id, module_id, filename, mime_type, content_preview, size_bytes, extracted_topics, estimated_tokens, uploaded_at)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         returning id, module_id, filename, mime_type, content_preview, size_bytes, extracted_topics, estimated_tokens, uploaded_at`,
+        [
+          materialId,
+          input.moduleId,
+          input.filename,
+          input.mimeType,
+          input.contentPreview ?? null,
+          input.sizeBytes,
+          [],
+          input.estimatedTokens,
+          input.uploadedAt.toISOString(),
+        ],
+      );
+
+      return mapStudyMaterial(result.rows[0]);
     },
     createInvite: async (invite) => {
       const inviteId = randomUUID();
@@ -107,7 +143,17 @@ export function createPostgresModuleRepository(execute: SqlExecutor): ModuleRepo
         [moduleId],
       );
 
-      return result.rows[0] ? mapStudyModule(result.rows[0]) : null;
+      if (!result.rows[0]) {
+        return null;
+      }
+
+      const studyModule = mapStudyModule(result.rows[0]);
+      const materials = await listMaterialsForModule(execute, moduleId);
+
+      return {
+        ...studyModule,
+        materials,
+      };
     },
     hasInviteToken: async (token) => {
       const result = await execute<{ token: string }>(
@@ -164,14 +210,43 @@ export function createPostgresModuleRepository(execute: SqlExecutor): ModuleRepo
 
       return mapModuleInvite(result.rows[0]);
     },
+    updateMaterialTopics: async (input: UpdateMaterialTopicsRecord) => {
+      const result = await execute<StudyMaterialRow>(
+        `update study_materials
+         set extracted_topics = $3
+         where module_id = $1 and id = $2
+         returning id, module_id, filename, mime_type, content_preview, size_bytes, extracted_topics, estimated_tokens, uploaded_at`,
+        [input.moduleId, input.materialId, input.extractedTopics],
+      );
+
+      if (!result.rows[0]) {
+        throw new Error("Material not found.");
+      }
+
+      return mapStudyMaterial(result.rows[0]);
+    },
   };
+}
+
+async function listMaterialsForModule(execute: SqlExecutor, moduleId: string): Promise<StudyMaterial[]> {
+  const result = await execute<StudyMaterialRow>(
+    `select id, module_id, filename, mime_type, content_preview, size_bytes, extracted_topics, estimated_tokens, uploaded_at
+     from study_materials
+     where module_id = $1
+     order by uploaded_at desc`,
+    [moduleId],
+  );
+
+  return result.rows.map((row) => mapStudyMaterial(row));
 }
 
 function mapStudyModule(row: StudyModuleRow): StudyModule {
   return {
     createdAt: toDate(row.created_at),
+    curriculum: [],
     description: row.description,
     id: row.id,
+    materials: [],
     name: row.name,
     ownerId: row.owner_id,
     visibility: row.visibility as StudyModule["visibility"],
@@ -197,6 +272,20 @@ function mapModuleInvite(row: ModuleInviteRow): ModuleInvite {
     moduleId: row.module_id,
     role: row.role as ModuleInvite["role"],
     token: row.token,
+  };
+}
+
+function mapStudyMaterial(row: StudyMaterialRow): StudyMaterial {
+  return {
+    contentPreview: row.content_preview ?? null,
+    estimatedTokens: row.estimated_tokens,
+    extractedTopics: row.extracted_topics ?? [],
+    filename: row.filename,
+    id: row.id,
+    mimeType: row.mime_type,
+    moduleId: row.module_id,
+    sizeBytes: row.size_bytes,
+    uploadedAt: toDate(row.uploaded_at),
   };
 }
 

@@ -63,6 +63,7 @@ export interface Dictionary {
   detail_email: string;
   detail_role: string;
   detail_sendInvite: string;
+  detail_acceptInvite: string;
   detail_inviteSent: string;
   detail_copyToken: string;
   detail_quiz: string;
@@ -131,6 +132,59 @@ export interface Dictionary {
   common_loading: string;
   common_error: string;
   common_retry: string;
+  common_signInRequired: string;
+  common_save: string;
+  common_cancel: string;
+  common_delete: string;
+  common_edit: string;
+  common_close: string;
+  common_back: string;
+  common_next: string;
+  common_previous: string;
+
+  // Curriculum
+  curr_title: string;
+  curr_section: string;
+  curr_lesson: string;
+  curr_duration: string;
+  curr_completed: string;
+  curr_progress: string;
+  curr_noSections: string;
+  curr_addSection: string;
+  curr_addLesson: string;
+  curr_totalDuration: string;
+  curr_lessonsCount: string;
+
+  // Materials
+  mat_title: string;
+  mat_subtitle: string;
+  mat_upload: string;
+  mat_uploading: string;
+  mat_noMaterials: string;
+  mat_extractTopics: string;
+  mat_extracting: string;
+  mat_estimatedCost: string;
+  mat_topics: string;
+  mat_fileTypes: string;
+  mat_dragDrop: string;
+
+  // Templates
+  tmpl_multipleChoice: string;
+  tmpl_freeResponse: string;
+  tmpl_mixed: string;
+  tmpl_label: string;
+
+  // Legal
+  legal_privacy: string;
+  legal_terms: string;
+  legal_cookies: string;
+  legal_cookieBanner: string;
+  legal_cookieAccept: string;
+  legal_cookieDecline: string;
+
+  // Footer
+  footer_copyright: string;
+  footer_openSource: string;
 }
 
 export const DEFAULT_LOCALE: Locale = "en";
