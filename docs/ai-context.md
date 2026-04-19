@@ -160,7 +160,23 @@ Auth:
 * list visible modules
 * inspect module members
 * PostgreSQL-backed server runtime with local fallback
-* single-page dashboard UI
+* multi-page UI with clean navigation
+
+### Site Structure
+
+The MVP ships the following pages:
+
+| Route               | Purpose                                              |
+|---------------------|------------------------------------------------------|
+| `/`                 | Public landing page – hero, feature highlights, CTA  |
+| `/dashboard`        | Authenticated overview – recent modules, quick stats |
+| `/modules`          | Browse, search and create study modules              |
+| `/modules/[id]`     | Module detail – content, members, invite, quiz, plan |
+| `/quiz`             | Standalone quiz generator                            |
+| `/plans`            | Standalone study plan generator                      |
+
+Shared chrome: persistent top navbar with logo + navigation links.
+Each section is self-contained; users are guided to features via clear CTAs.
 
 ---
 
@@ -169,6 +185,7 @@ Auth:
 * no social feed
 * no marketplace
 * no complex gamification (initially)
+* no authentication in MVP (simulated userId)
 
 ---
 

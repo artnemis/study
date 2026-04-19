@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { Navbar } from "./_components/navbar";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -35,6 +36,7 @@ export default function RootLayout({
             <div className="absolute right-[-6rem] top-20 h-80 w-80 rounded-full bg-[radial-gradient(circle,#8ddbd0_0%,rgba(141,219,208,0)_70%)]" />
             <div className="absolute bottom-[-8rem] left-1/3 h-96 w-96 rounded-full bg-[radial-gradient(circle,#d2ddff_0%,rgba(210,221,255,0)_70%)]" />
           </div>
+          <Navbar />
           <main className="relative flex min-h-full flex-1">{children}</main>
         </div>
       </body>
