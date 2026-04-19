@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { checkPermission } from "./permissions";
-import { MODULE_ROLES } from "./module.types";
 
 describe("checkPermission", () => {
   it("owner always true for any action", () => {
@@ -31,7 +30,6 @@ describe("checkPermission", () => {
   });
 
   it("invalid role is rejected", () => {
-    // @ts-expect-error
-    expect(checkPermission("invalid", "read")).toBe(false);
+    expect(checkPermission("invalid" as never, "read")).toBe(false);
   });
 });

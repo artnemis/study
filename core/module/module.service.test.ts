@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createModule } from "./module.service";
+import { createModule, getModuleById } from "./module.service";
 import type {
   CreateModuleRecord,
+  CreateInviteRecord,
   ModuleMember,
   ModuleRepository,
+  ModuleInvite,
   StudyModule,
 } from "./module.types";
 
@@ -121,12 +123,170 @@ describe("createModule", () => {
   });
 });
 
-function createRepositoryDouble(): ModuleRepository {
+describe("getModuleById", () => {
+  it("returns the module with members", async () => {
+    const repository = createRepositoryDouble();
+
+    await expect(
+      getModuleById(
+        {
+          moduleId: "module-1",
+          requesterId: null,
+        },
+        {
+          now: () => FIXED_DATE,
+          repository,
+        },
+      ),
+    ).resolves.toEqual({
+      createdAt: FIXED_DATE,
+      description: "Comprehensive notes for topology.",
+      id: "module-1",
+      members: [
+        {
+          createdAt: FIXED_DATE,
+          moduleId: "module-1",
+          role: "owner",
+          userId: "user-123",
+        },
+      ],
+      name: "Topology 101",
+      ownerId: "user-123",
+      visibility: "public",
+    });
+  });
+
+  it("rejects private access without membership", async () => {
+    const repository = createRepositoryDouble({
+      getModuleById: vi.fn(async () => ({
+        createdAt: FIXED_DATE,
+        description: "Private notes",
+        id: "module-1",
+        name: "Topology 101",
+        ownerId: "user-123",
+        visibility: "private",
+      })),
+    });
+
+    await expect(
+      getModuleById(
+        {
+          moduleId: "module-1",
+          requesterId: "user-999",
+        },
+        {
+          now: () => FIXED_DATE,
+          repository,
+        },
+      ),
+    ).rejects.toThrow("Private module access requires membership.");
+  });
+
+  it("allows private access for members", async () => {
+    const repository = createRepositoryDouble({
+      getModuleById: vi.fn(async () => ({
+        createdAt: FIXED_DATE,
+        description: "Private notes",
+        id: "module-1",
+        name: "Topology 101",
+        ownerId: "user-123",
+        visibility: "private",
+      })),
+    });
+
+    await expect(
+      getModuleById(
+        {
+          moduleId: "module-1",
+          requesterId: "user-123",
+        },
+        {
+          now: () => FIXED_DATE,
+          repository,
+        },
+      ),
+    ).resolves.toMatchObject({
+      id: "module-1",
+      visibility: "private",
+    });
+  });
+
+  it("rejects missing module ids", async () => {
+    const repository = createRepositoryDouble();
+
+    await expect(
+      getModuleById(
+        {
+          moduleId: "   ",
+          requesterId: "user-123",
+        },
+        {
+          now: () => FIXED_DATE,
+          repository,
+        },
+      ),
+    ).rejects.toThrow("Module id is required.");
+  });
+
+  it("rejects unknown modules", async () => {
+    const repository = createRepositoryDouble({
+      getModuleById: vi.fn(async () => null),
+    });
+
+    await expect(
+      getModuleById(
+        {
+          moduleId: "module-404",
+          requesterId: "user-123",
+        },
+        {
+          now: () => FIXED_DATE,
+          repository,
+        },
+      ),
+    ).rejects.toThrow("Module not found.");
+  });
+});
+
+function createRepositoryDouble(overrides?: Partial<ModuleRepository>): ModuleRepository {
   return {
     addMember: vi.fn(async (member: ModuleMember) => member),
+    createInvite: vi.fn(async (input: CreateInviteRecord): Promise<ModuleInvite> => ({
+      ...input,
+      id: "invite-1",
+    })),
     createModule: vi.fn(async (input: CreateModuleRecord): Promise<StudyModule> => ({
       ...input,
       id: "module-1",
     })),
+    findInviteByToken: vi.fn(async () => null),
+    getModuleById: vi.fn(async () => ({
+      createdAt: FIXED_DATE,
+      description: "Comprehensive notes for topology.",
+      id: "module-1",
+      name: "Topology 101",
+      ownerId: "user-123",
+      visibility: "public",
+    })),
+    hasInviteToken: vi.fn(async () => false),
+    listMembers: vi.fn(async () => [
+      {
+        createdAt: FIXED_DATE,
+        moduleId: "module-1",
+        role: "owner",
+        userId: "user-123",
+      },
+    ]),
+    markInviteAsAccepted: vi.fn(async (inviteId: string, acceptedAt: Date): Promise<ModuleInvite> => ({
+      acceptedAt,
+      createdAt: FIXED_DATE,
+      email: "student@example.com",
+      expiresAt: new Date(FIXED_DATE.getTime() + 48 * 60 * 60 * 1000),
+      id: inviteId,
+      moduleId: "module-1",
+      role: "viewer",
+      token: "invite-token",
+    })),
+    ...overrides,
   };
 }

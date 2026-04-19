@@ -16,6 +16,7 @@ ModuleInvite:
 * role
 * token
 * expiresAt
+* acceptedAt
 
 ---
 
@@ -33,6 +34,7 @@ ModuleInvite:
 * token must be unique
 * expiration: 48h
 * single-use token
+* invited role: editor | viewer
 
 ---
 

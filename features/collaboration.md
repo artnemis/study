@@ -45,9 +45,12 @@ ModuleMember:
 
 * owner cannot be removed
 * editors cannot change roles
+* invites assign collaborator roles only
+* permissions must be checked centrally
 
 ---
 
 ## Files
 
 * /core/module/permissions.ts
+* /core/module/invite.service.ts

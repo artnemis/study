@@ -133,6 +133,16 @@ Auth:
 
 ---
 
+## Project Structure
+
+* /core/ai → AIProvider contracts and provider adapters
+* /core/module → module creation, lookup, permissions, invites
+* /core/quiz → quiz types, generation, validation
+* /core/plan → study plan types and generation
+* /hooks → client hooks only, no business logic
+
+---
+
 ## MVP Scope
 
 * create module
@@ -181,6 +191,13 @@ We require high test coverage (>90%).
 
 * AIProvider must always be mocked
 * no real API calls in tests
+
+### Implemented Core Contracts
+
+* getModuleById must include members
+* private modules require membership for read access
+* invites create memberships through validated tokens
+* quiz and study plan AI output must be validated before use
 
 ### Coverage Target
 

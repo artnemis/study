@@ -26,6 +26,11 @@ StudyModule:
 * delete module
 * get module
 
+Get module output:
+
+* module fields
+* members[]
+
 ---
 
 ## Rules
@@ -33,6 +38,7 @@ StudyModule:
 * creator becomes owner
 * private modules require membership
 * public modules are readable by anyone
+* module reads must include members
 
 ---
 

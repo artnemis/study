@@ -2,4 +2,7 @@ Create StudyPlan types.
 
 Requirements:
 
-* StudyPlan, StudyDay, StudyTask
+* StudyPlan
+* StudyDay
+* StudyTask
+* GeneratePlanInput
