@@ -1,5 +1,12 @@
 import type { AIProvider } from "../ai/ai-provider";
-import { STUDY_TASK_KINDS, type GeneratePlanInput, type StudyPlan, type StudyTaskKind } from "./plan.types";
+import {
+  STUDY_TASK_KINDS,
+  type GeneratePlanInput,
+  type StudyDay,
+  type StudyPlan,
+  type StudyTask,
+  type StudyTaskKind,
+} from "./plan.types";
 
 export interface GeneratePlanDependencies {
   aiProvider: AIProvider;
@@ -55,7 +62,7 @@ function validateStudyDay(
   allowedTopics: string[],
   dailyStudyMinutes: number,
   examTimestamp: number,
-) {
+): StudyDay {
   if (!isRecord(day)) {
     throw new Error("Study day is invalid.");
   }
@@ -87,7 +94,7 @@ function validateStudyDay(
   };
 }
 
-function validateStudyTask(task: unknown, allowedTopics: string[]) {
+function validateStudyTask(task: unknown, allowedTopics: string[]): StudyTask {
   if (!isRecord(task)) {
     throw new Error("Study task is invalid.");
   }
@@ -95,6 +102,8 @@ function validateStudyTask(task: unknown, allowedTopics: string[]) {
   if (typeof task.kind !== "string" || !STUDY_TASK_KINDS.includes(task.kind as StudyTaskKind)) {
     throw new Error("Study task kind is invalid.");
   }
+
+  const kind = task.kind as StudyTaskKind;
 
   if (typeof task.topic !== "string") {
     throw new Error("Study task topic is invalid.");
@@ -106,18 +115,26 @@ function validateStudyTask(task: unknown, allowedTopics: string[]) {
     throw new Error("Study task topic is invalid.");
   }
 
-  if (!Number.isInteger(task.durationMinutes) || task.durationMinutes <= 0) {
+  if (typeof task.durationMinutes !== "number" || !Number.isInteger(task.durationMinutes) || task.durationMinutes <= 0) {
     throw new Error("Study task duration is invalid.");
   }
 
-  if (typeof task.description !== "string" || task.description.trim().length === 0) {
+  const durationMinutes = task.durationMinutes;
+
+  if (typeof task.description !== "string") {
+    throw new Error("Study task description is invalid.");
+  }
+
+  const description = task.description.trim();
+
+  if (description.length === 0) {
     throw new Error("Study task description is invalid.");
   }
 
   return {
-    description: task.description.trim(),
-    durationMinutes: task.durationMinutes,
-    kind: task.kind,
+    description,
+    durationMinutes,
+    kind,
     topic,
   };
 }

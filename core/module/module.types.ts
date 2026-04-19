@@ -61,6 +61,10 @@ export interface CreateModuleResult {
   ownerMembership: ModuleMember;
 }
 
+export interface ListModulesInput {
+  requesterId?: string | null;
+}
+
 export interface GetModuleByIdInput {
   moduleId: string;
   requesterId?: string | null;
@@ -96,6 +100,7 @@ export interface ModuleRepository {
   findInviteByToken(token: string): Promise<ModuleInvite | null>;
   getModuleById(moduleId: string): Promise<StudyModule | null>;
   hasInviteToken(token: string): Promise<boolean>;
+  listModules(requesterId?: string | null): Promise<StudyModule[]>;
   listMembers(moduleId: string): Promise<ModuleMember[]>;
   markInviteAsAccepted(inviteId: string, acceptedAt: Date): Promise<ModuleInvite>;
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createModule, getModuleById } from "./module.service";
+import { createModule, getModuleById, listModules } from "./module.service";
 import type {
   CreateModuleRecord,
   CreateInviteRecord,
@@ -248,6 +248,51 @@ describe("getModuleById", () => {
   });
 });
 
+describe("listModules", () => {
+  it("normalizes requester id before loading visible modules", async () => {
+    const repository = createRepositoryDouble();
+
+    await expect(
+      listModules(
+        {
+          requesterId: "  user-123  ",
+        },
+        {
+          now: () => FIXED_DATE,
+          repository,
+        },
+      ),
+    ).resolves.toEqual([
+      {
+        createdAt: FIXED_DATE,
+        description: "Comprehensive notes for topology.",
+        id: "module-1",
+        name: "Topology 101",
+        ownerId: "user-123",
+        visibility: "public",
+      },
+    ]);
+
+    expect(repository.listModules).toHaveBeenCalledWith("user-123");
+  });
+
+  it("passes null requester ids when blank", async () => {
+    const repository = createRepositoryDouble();
+
+    await listModules(
+      {
+        requesterId: "   ",
+      },
+      {
+        now: () => FIXED_DATE,
+        repository,
+      },
+    );
+
+    expect(repository.listModules).toHaveBeenCalledWith(null);
+  });
+});
+
 function createRepositoryDouble(overrides?: Partial<ModuleRepository>): ModuleRepository {
   return {
     addMember: vi.fn(async (member: ModuleMember) => member),
@@ -269,6 +314,16 @@ function createRepositoryDouble(overrides?: Partial<ModuleRepository>): ModuleRe
       visibility: "public",
     })),
     hasInviteToken: vi.fn(async () => false),
+    listModules: vi.fn(async () => [
+      {
+        createdAt: FIXED_DATE,
+        description: "Comprehensive notes for topology.",
+        id: "module-1",
+        name: "Topology 101",
+        ownerId: "user-123",
+        visibility: "public",
+      },
+    ]),
     listMembers: vi.fn(async () => [
       {
         createdAt: FIXED_DATE,

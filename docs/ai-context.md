@@ -4,6 +4,11 @@
 
 Artnemis is an open-source AI-powered platform to help users prepare for exams.
 
+Repository policy:
+
+* public on GitHub
+* MIT licensed
+
 It is NOT a generic learning platform.
 It is an "AI exam preparation engine" with collaborative modules.
 
@@ -117,6 +122,7 @@ Backend:
 Database:
 
 * PostgreSQL
+* local JSON fallback for MVP/demo mode when DATABASE_URL is missing
 
 Auth:
 
@@ -140,16 +146,21 @@ Auth:
 * /core/quiz → quiz types, generation, validation
 * /core/plan → study plan types and generation
 * /hooks → client hooks only, no business logic
+* /app/api → route handlers and backend-for-frontend layer
+* /docs → public repo documentation and onboarding
 
 ---
 
 ## MVP Scope
 
 * create module
-* upload content
 * generate plan
 * generate quizzes
 * basic collaboration (invite)
+* list visible modules
+* inspect module members
+* PostgreSQL-backed server runtime with local fallback
+* single-page dashboard UI
 
 ---
 
@@ -198,6 +209,8 @@ We require high test coverage (>90%).
 * private modules require membership for read access
 * invites create memberships through validated tokens
 * quiz and study plan AI output must be validated before use
+* modules list returns public modules plus requester-visible private modules
+* route handlers are public endpoints and must sanitize failures
 
 ### Coverage Target
 
@@ -215,3 +228,5 @@ Tests must verify behavior, not implementation.
 
 AI output must never be trusted blindly.
 Always validate and sanitize responses.
+
+Route handlers must avoid leaking infrastructure details in error responses.

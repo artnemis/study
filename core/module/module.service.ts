@@ -2,6 +2,7 @@ import {
   type CreateModuleInput,
   type CreateModuleResult,
   type GetModuleByIdInput,
+  type ListModulesInput,
   type ModuleDetails,
   type ModuleMember,
   type ModuleRepository,
@@ -62,6 +63,15 @@ export async function getModuleById(
     ...studyModule,
     members,
   };
+}
+
+export async function listModules(
+  input: ListModulesInput,
+  dependencies: CreateModuleDependencies,
+) {
+  const requesterId = normalizeOptionalString(input.requesterId);
+
+  return dependencies.repository.listModules(requesterId);
 }
 
 function normalizeCreateModuleInput(input: CreateModuleInput): CreateModuleInput {

@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Artnemis
 
-## Getting Started
+Artnemis is an open-source AI-powered exam preparation platform built with Next.js App Router and TypeScript.
 
-First, run the development server:
+The current repository ships a working MVP with:
+
+* collaborative study modules
+* invite-based access with owner, editor and viewer roles
+* AI-generated quizzes
+* AI-generated study plans
+* App Router API endpoints
+* PostgreSQL runtime support with a local JSON fallback for demo mode
+
+## License
+
+This repository is released under the MIT license. See [LICENSE](LICENSE).
+
+## Quick Start
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Copy environment variables:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+If DATABASE_URL is missing, the MVP runs in local JSON demo mode and stores data in .data/artnemis-mvp.json.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment
 
-## Learn More
+* DATABASE_URL: PostgreSQL connection string for persistent runtime storage
+* OPENAI_API_KEY: optional, enables OpenAI-backed quiz and plan generation
 
-To learn more about Next.js, take a look at the following resources:
+Without OPENAI_API_KEY, the app falls back to a deterministic demo AI provider so the MVP remains usable.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* npm run dev
+* npm run build
+* npm run start
+* npm run lint
+* npm test
 
-## Deploy on Vercel
+## API Surface
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+* GET /api/modules
+* POST /api/modules
+* GET /api/modules/:moduleId
+* POST /api/modules/:moduleId/invites
+* POST /api/invites/accept
+* POST /api/quizzes
+* POST /api/plans
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Detailed request and response examples live in [docs/api.md](docs/api.md).
+
+## Architecture
+
+* [docs/architecture.md](docs/architecture.md)
+* [docs/setup.md](docs/setup.md)
+* [docs/api.md](docs/api.md)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for repository conventions and contribution workflow.

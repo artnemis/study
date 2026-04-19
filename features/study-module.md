@@ -25,6 +25,7 @@ StudyModule:
 * update module
 * delete module
 * get module
+* list modules
 
 Get module output:
 
@@ -46,3 +47,4 @@ Get module output:
 
 * /core/module/module.service.ts
 * /core/module/module.types.ts
+* /core/module/postgres-module.repository.ts

@@ -1,7 +1,9 @@
 {
-  "name": "study-forge",
+  "name": "artnemis",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "description": "Open-source AI-powered exam preparation platform.",
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,19 +14,21 @@
   },
   "dependencies": {
     "next": "16.2.4",
+    "pg": "^8.16.3",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^3.2.4",
-    "@vitest/coverage-v8": "^3.2.4"
+    "vitest": "^3.2.4"
   }
 }

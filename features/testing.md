@@ -10,3 +10,5 @@ Test cases:
 * accept invite rejects expired token
 * validateQuiz rejects invalid answers
 * generatePlan rejects invalid AI output
+* postgres repository maps rows to domain types
+* listModules returns only visible modules for requester

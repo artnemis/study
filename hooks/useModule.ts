@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 
 import type { ModuleDetails } from "@/core/module/module.types";
 
@@ -24,6 +24,7 @@ export function useModule(moduleId: string | null, options: UseModuleOptions = {
   const [error, setError] = useState<Error | null>(null);
   const enabled = options.enabled ?? true;
   const fetcher = options.fetcher ?? fetchModule;
+  const fetchModuleEvent = useEffectEvent(async (currentModuleId: string) => fetcher(currentModuleId));
 
   useEffect(() => {
     let isActive = true;
@@ -46,7 +47,7 @@ export function useModule(moduleId: string | null, options: UseModuleOptions = {
       }
 
       try {
-        const nextModule = await fetcher(normalizedModuleId);
+        const nextModule = await fetchModuleEvent(normalizedModuleId);
 
         if (isActive) {
           setModule(nextModule);
@@ -69,7 +70,7 @@ export function useModule(moduleId: string | null, options: UseModuleOptions = {
     return () => {
       isActive = false;
     };
-  }, [enabled, fetcher, moduleId]);
+  }, [enabled, moduleId]);
 
   return {
     error,
@@ -101,7 +102,9 @@ export function useModule(moduleId: string | null, options: UseModuleOptions = {
 }
 
 async function fetchModule(moduleId: string): Promise<ModuleDetails> {
-  const response = await fetch(`/api/modules/${encodeURIComponent(moduleId)}`);
+  const response = await fetch(`/api/modules/${encodeURIComponent(moduleId)}`, {
+    cache: "no-store",
+  });
 
   if (!response.ok) {
     throw new Error(`Unable to fetch module ${moduleId}.`);
