@@ -4,6 +4,7 @@ import { type FormEvent, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { generatePlanApi } from "@/app/_lib/api-client";
 import type { PlanResponse } from "@/app/_lib/api-client";
+import { useT } from "@/lib/i18n/context";
 import {
   Badge,
   Feedback,
@@ -17,6 +18,7 @@ import {
 
 export default function PlansContent() {
   const searchParams = useSearchParams();
+  const t = useT();
   const [form, setForm] = useState({
     examDate: "",
     dailyStudyMinutes: "90",
@@ -40,7 +42,7 @@ export default function PlansContent() {
         topics,
       });
       setPlanResult(result);
-      setFeedback(`Piano di studio generato in modalità ${result.aiMode}.`);
+      setFeedback(`${t.plan_aiMode}: ${result.aiMode}`);
     } catch (error) {
       setFeedback(toMessage(error));
     } finally {
@@ -50,25 +52,25 @@ export default function PlansContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-10">
-      <PageHeader title="Piano di Studio" subtitle="Genera un calendario di studio personalizzato basato sulla data d'esame." />
+      <PageHeader title={t.plan_title} subtitle={t.plan_subtitle} />
 
       <Feedback message={feedback} />
 
-      <Panel title="Configura il piano">
+      <Panel title={t.plan_title}>
         <form className="space-y-4" onSubmit={onGenerate}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Data esame">
+            <Field label={t.plan_examDate}>
               <input className={fieldClassName} type="date" value={form.examDate} onChange={(e) => setForm((f) => ({ ...f, examDate: e.target.value }))} />
             </Field>
-            <Field label="Minuti giornalieri">
+            <Field label={t.plan_dailyMinutes}>
               <input className={fieldClassName} type="number" min="30" step="15" value={form.dailyStudyMinutes} onChange={(e) => setForm((f) => ({ ...f, dailyStudyMinutes: e.target.value }))} />
             </Field>
           </div>
-          <Field label="Argomenti">
-            <textarea className={`${fieldClassName} min-h-20 resize-y`} value={form.topics} onChange={(e) => setForm((f) => ({ ...f, topics: e.target.value }))} placeholder="Separati da virgola: Algebra, Geometria, Analisi" />
+          <Field label={t.plan_topics}>
+            <textarea className={`${fieldClassName} min-h-20 resize-y`} value={form.topics} onChange={(e) => setForm((f) => ({ ...f, topics: e.target.value }))} placeholder={t.plan_topicsPlaceholder} />
           </Field>
           <button disabled={isSubmitting} className={primaryButtonClassName} type="submit">
-            {isSubmitting ? "Generazione..." : "Genera piano"}
+            {isSubmitting ? t.plan_generating : t.plan_generate}
           </button>
         </form>
       </Panel>
@@ -76,7 +78,7 @@ export default function PlansContent() {
       {planResult ? (
         <section className="space-y-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-slate-950">Il tuo piano di studio</h2>
+            <h2 className="text-xl font-semibold text-slate-950">{t.plan_title}</h2>
             <Badge label={`AI: ${planResult.aiMode}`} />
           </div>
           {planResult.plan.days.map((day) => (

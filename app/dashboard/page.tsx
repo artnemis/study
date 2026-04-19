@@ -1,41 +1,45 @@
 "use client";
 
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useModuleCatalog } from "@/hooks/useModuleCatalog";
+import { useT } from "@/lib/i18n/context";
 import { Badge, Metric, Panel } from "@/app/_components/ui";
 
-const quickActions = [
-  { href: "/modules", label: "Crea modulo", description: "Nuovo modulo di studio collaborativo", icon: "📚" },
-  { href: "/quiz", label: "Genera quiz", description: "Quiz AI su qualsiasi argomento", icon: "🧠" },
-  { href: "/plans", label: "Piano di studio", description: "Calendario personalizzato per l'esame", icon: "📅" },
-] as const;
-
 export default function DashboardPage() {
-  const catalog = useModuleCatalog("demo-owner");
+  const { data: session } = useSession();
+  const userId = session?.user?.id ?? null;
+  const catalog = useModuleCatalog(userId);
+  const t = useT();
+
+  const quickActions = [
+    { href: "/modules", label: t.dash_newModule, description: t.landing_feature1_desc, icon: "📚" },
+    { href: "/quiz", label: t.dash_goQuiz, description: t.landing_feature2_desc, icon: "🧠" },
+    { href: "/plans", label: t.dash_goPlan, description: t.landing_feature3_desc, icon: "📅" },
+  ];
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:px-10">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">Dashboard</h1>
-        <p className="text-sm text-slate-600">Panoramica del tuo spazio di studio.</p>
+        <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">{t.dash_title}</h1>
+        <p className="text-sm text-slate-600">{t.dash_subtitle}</p>
       </div>
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-3xl border border-black/8 bg-white/90 p-5 backdrop-blur">
-          <Metric label="Moduli totali" value={String(catalog.modules.length)} />
+          <Metric label={t.dash_totalModules} value={String(catalog.modules.length)} />
         </div>
         <div className="rounded-3xl border border-black/8 bg-white/90 p-5 backdrop-blur">
-          <Metric label="Moduli pubblici" value={String(catalog.modules.filter((m) => m.visibility === "public").length)} />
+          <Metric label={t.dash_publicModules} value={String(catalog.modules.filter((m) => m.visibility === "public").length)} />
         </div>
         <div className="rounded-3xl border border-black/8 bg-white/90 p-5 backdrop-blur">
-          <Metric label="Storage" value={catalog.storageMode ?? "loading..."} />
+          <Metric label={t.dash_storage} value={catalog.storageMode ?? t.common_loading} />
         </div>
       </div>
 
       {/* Quick actions */}
       <section>
-        <h2 className="mb-4 text-lg font-semibold text-slate-950">Azioni rapide</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {quickActions.map((action) => (
             <Link
@@ -52,14 +56,14 @@ export default function DashboardPage() {
       </section>
 
       {/* Recent modules */}
-      <Panel title="Moduli recenti" subtitle="Gli ultimi moduli nel tuo catalogo.">
+      <Panel title={t.nav_modules}>
         {catalog.isLoading ? (
-          <p className="text-sm text-slate-500">Caricamento...</p>
+          <p className="text-sm text-slate-500">{t.common_loading}</p>
         ) : catalog.modules.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-black/10 bg-stone-50 px-4 py-8 text-center text-sm text-slate-500">
-            Nessun modulo ancora.{" "}
+            {t.dash_noModules}{" "}
             <Link href="/modules" className="font-semibold text-teal-700 underline underline-offset-2">
-              Creane uno
+              {t.dash_newModule}
             </Link>
           </div>
         ) : (
@@ -79,7 +83,7 @@ export default function DashboardPage() {
             ))}
             {catalog.modules.length > 5 ? (
               <Link href="/modules" className="block text-center text-sm font-semibold text-teal-700 hover:underline">
-                Vedi tutti i moduli →
+                {t.dash_goModules} →
               </Link>
             ) : null}
           </div>

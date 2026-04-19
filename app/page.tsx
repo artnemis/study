@@ -1,33 +1,38 @@
-import Link from "next/link";
+"use client";
 
-const features = [
-  {
-    title: "Moduli di studio",
-    description: "Crea moduli collaborativi con contenuti, quiz e piani di studio. Condividi con il tuo team via inviti.",
-    icon: "📚",
-    href: "/modules",
-  },
-  {
-    title: "Quiz AI",
-    description: "Genera quiz personalizzati con l'intelligenza artificiale. Difficoltà adattiva e spiegazioni dettagliate.",
-    icon: "🧠",
-    href: "/quiz",
-  },
-  {
-    title: "Piani di studio",
-    description: "Pianifica lo studio giorno per giorno in base alla data d'esame, agli argomenti e al tempo disponibile.",
-    icon: "📅",
-    href: "/plans",
-  },
-  {
-    title: "Collaborazione",
-    description: "Invita colleghi come editor o viewer. Ogni modulo ha ruoli e permessi granulari.",
-    icon: "🤝",
-    href: "/modules",
-  },
-] as const;
+import Link from "next/link";
+import { useT } from "@/lib/i18n/context";
 
 export default function Home() {
+  const t = useT();
+
+  const features = [
+    {
+      title: t.landing_feature1_title,
+      description: t.landing_feature1_desc,
+      icon: "📚",
+      href: "/modules",
+    },
+    {
+      title: t.landing_feature2_title,
+      description: t.landing_feature2_desc,
+      icon: "🧠",
+      href: "/quiz",
+    },
+    {
+      title: t.landing_feature3_title,
+      description: t.landing_feature3_desc,
+      icon: "📅",
+      href: "/plans",
+    },
+    {
+      title: t.landing_feature4_title,
+      description: t.landing_feature4_desc,
+      icon: "🤝",
+      href: "/modules",
+    },
+  ];
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center px-4 py-16 sm:px-6 lg:px-10">
       {/* Hero */}
@@ -36,35 +41,31 @@ export default function Home() {
           Open Source &middot; MIT License
         </span>
         <h1 className="max-w-3xl text-5xl font-bold tracking-[-0.06em] text-slate-950 sm:text-6xl lg:text-7xl">
-          Preparati agli esami
+          {t.landing_title.split(" ").slice(0, -1).join(" ")}
           <br />
-          <span className="text-[var(--accent)]">con l&apos;AI</span>
+          <span className="text-[var(--accent)]">{t.landing_title.split(" ").slice(-1)[0]}</span>
         </h1>
         <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
-          Artnemis genera quiz, piani di studio e ti aiuta a collaborare sui contenuti.
-          Tutto in un&apos;unica piattaforma open-source.
+          {t.landing_subtitle}
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <Link
-            href="/dashboard"
+            href="/auth/sign-up"
             className="inline-flex items-center justify-center rounded-full bg-slate-950 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-800"
           >
-            Inizia ora
+            {t.landing_cta}
           </Link>
           <Link
             href="/modules"
             className="inline-flex items-center justify-center rounded-full border border-slate-900/15 bg-white/80 px-7 py-3.5 text-sm font-semibold text-slate-900 transition hover:bg-stone-100"
           >
-            Esplora moduli
+            {t.nav_modules}
           </Link>
         </div>
       </section>
 
       {/* Features */}
       <section className="mt-24 w-full">
-        <h2 className="mb-10 text-center text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-3xl">
-          Tutto quello che serve per prepararti
-        </h2>
         <div className="grid gap-6 sm:grid-cols-2">
           {features.map((feature) => (
             <Link
@@ -82,17 +83,11 @@ export default function Home() {
 
       {/* Bottom CTA */}
       <section className="mt-24 flex flex-col items-center text-center">
-        <h2 className="text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-3xl">
-          Pronto per studiare meglio?
-        </h2>
-        <p className="mt-3 text-sm text-slate-600">
-          Nessun account richiesto per l&apos;MVP. Inizia subito.
-        </p>
         <Link
-          href="/dashboard"
+          href="/auth/sign-up"
           className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-950 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-800"
         >
-          Vai alla dashboard
+          {t.landing_cta}
         </Link>
       </section>
     </div>

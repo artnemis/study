@@ -54,8 +54,8 @@ class DemoAIProvider implements AIProvider {
   }
 }
 
-export function getAIProvider(): AIProvider {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
+export function getAIProvider(userApiKey?: string | null): AIProvider {
+  const apiKey = userApiKey?.trim() || process.env.OPENAI_API_KEY?.trim();
 
   if (apiKey) {
     return new OpenAIProvider({ apiKey });
@@ -64,8 +64,8 @@ export function getAIProvider(): AIProvider {
   return new DemoAIProvider();
 }
 
-export function getAIMode(): "demo" | "openai" {
-  return process.env.OPENAI_API_KEY?.trim() ? "openai" : "demo";
+export function getAIMode(userApiKey?: string | null): "demo" | "openai" {
+  return (userApiKey?.trim() || process.env.OPENAI_API_KEY?.trim()) ? "openai" : "demo";
 }
 
 function buildQuestion(topic: string, index: number) {

@@ -4,6 +4,7 @@ import { type FormEvent, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { generateQuizApi } from "@/app/_lib/api-client";
 import type { QuizResponse } from "@/app/_lib/api-client";
+import { useT } from "@/lib/i18n/context";
 import {
   Badge,
   Feedback,
@@ -17,6 +18,7 @@ import {
 
 export default function QuizContent() {
   const searchParams = useSearchParams();
+  const t = useT();
   const [form, setForm] = useState({
     topic: searchParams.get("topic") ?? "",
     difficulty: "medium" as "easy" | "medium" | "hard",
@@ -25,6 +27,8 @@ export default function QuizContent() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [quizResult, setQuizResult] = useState<QuizResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const difficultyLabels = { easy: t.quiz_easy, medium: t.quiz_medium, hard: t.quiz_hard };
 
   async function onGenerate(e: FormEvent) {
     e.preventDefault();
@@ -39,7 +43,7 @@ export default function QuizContent() {
           .filter((v) => v.length > 0),
       });
       setQuizResult(result);
-      setFeedback(`Quiz generato in modalità ${result.aiMode}.`);
+      setFeedback(`${t.quiz_aiMode}: ${result.aiMode}`);
     } catch (error) {
       setFeedback(toMessage(error));
     } finally {
@@ -49,29 +53,24 @@ export default function QuizContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-10">
-      <PageHeader title="Quiz Generator" subtitle="Genera quiz personalizzati con l'intelligenza artificiale." />
+      <PageHeader title={t.quiz_title} subtitle={t.quiz_subtitle} />
 
       <Feedback message={feedback} />
 
-      <Panel title="Configura il quiz">
+      <Panel title={t.quiz_title}>
         <form className="space-y-4" onSubmit={onGenerate}>
-          <Field label="Argomento">
-            <input className={fieldClassName} value={form.topic} onChange={(e) => setForm((f) => ({ ...f, topic: e.target.value }))} placeholder="es. Algebra Lineare" />
+          <Field label={t.quiz_topic}>
+            <input className={fieldClassName} value={form.topic} onChange={(e) => setForm((f) => ({ ...f, topic: e.target.value }))} />
           </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Difficoltà">
-              <select className={fieldClassName} value={form.difficulty} onChange={(e) => setForm((f) => ({ ...f, difficulty: e.target.value as typeof f.difficulty }))}>
-                <option value="easy">Facile</option>
-                <option value="medium">Medio</option>
-                <option value="hard">Difficile</option>
-              </select>
-            </Field>
-            <Field label="Errori precedenti">
-              <input className={fieldClassName} value={form.previousMistakes} onChange={(e) => setForm((f) => ({ ...f, previousMistakes: e.target.value }))} placeholder="separati da virgola" />
-            </Field>
-          </div>
+          <Field label={t.quiz_difficulty}>
+            <select className={fieldClassName} value={form.difficulty} onChange={(e) => setForm((f) => ({ ...f, difficulty: e.target.value as typeof f.difficulty }))}>
+              <option value="easy">{t.quiz_easy}</option>
+              <option value="medium">{t.quiz_medium}</option>
+              <option value="hard">{t.quiz_hard}</option>
+            </select>
+          </Field>
           <button disabled={isSubmitting} className={primaryButtonClassName} type="submit">
-            {isSubmitting ? "Generazione..." : "Genera quiz"}
+            {isSubmitting ? t.quiz_generating : t.quiz_generate}
           </button>
         </form>
       </Panel>
@@ -80,7 +79,7 @@ export default function QuizContent() {
         <section className="space-y-4">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-semibold text-slate-950">
-              Quiz: {quizResult.quiz.topic}
+              {t.quiz_title}: {quizResult.quiz.topic}
             </h2>
             <Badge label={quizResult.quiz.difficulty} />
             <Badge label={`AI: ${quizResult.aiMode}`} />
@@ -105,7 +104,7 @@ export default function QuizContent() {
                 ))}
               </ul>
               <p className="mt-3 text-sm text-slate-600">
-                <span className="font-medium">Spiegazione:</span> {question.explanation}
+                {question.explanation}
               </p>
             </div>
           ))}

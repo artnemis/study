@@ -126,7 +126,17 @@ Database:
 
 Auth:
 
-* NextAuth.js
+* NextAuth.js v5 (Auth.js) with Credentials provider
+* JWT session strategy
+* Sign-in / Sign-up pages
+* Protected routes via session checks
+
+i18n:
+
+* Client-side React Context provider
+* 5 languages: IT, EN, FR, ES, DE
+* Dictionary-based translation system
+* Locale stored in cookie + user settings
 
 ---
 
@@ -142,11 +152,17 @@ Auth:
 ## Project Structure
 
 * /core/ai → AIProvider contracts and provider adapters
+* /core/auth → user and settings types
 * /core/module → module creation, lookup, permissions, invites
 * /core/quiz → quiz types, generation, validation
 * /core/plan → study plan types and generation
 * /hooks → client hooks only, no business logic
+* /lib/i18n → dictionaries, locale context, types
 * /app/api → route handlers and backend-for-frontend layer
+* /app/api/auth → NextAuth routes and sign-up endpoint
+* /app/api/profile → user profile and API key management
+* /app/auth → sign-in and sign-up UI pages
+* /app/profile → user profile page
 * /docs → public repo documentation and onboarding
 
 ---
@@ -169,11 +185,14 @@ The MVP ships the following pages:
 | Route               | Purpose                                              |
 |---------------------|------------------------------------------------------|
 | `/`                 | Public landing page – hero, feature highlights, CTA  |
+| `/auth/sign-in`     | Sign in with email and password                      |
+| `/auth/sign-up`     | Register new account                                 |
 | `/dashboard`        | Authenticated overview – recent modules, quick stats |
 | `/modules`          | Browse, search and create study modules              |
 | `/modules/[id]`     | Module detail – content, members, invite, quiz, plan |
 | `/quiz`             | Standalone quiz generator                            |
 | `/plans`            | Standalone study plan generator                      |
+| `/profile`          | User profile – language, OpenAI API key management   |
 
 Shared chrome: persistent top navbar with logo + navigation links.
 Each section is self-contained; users are guided to features via clear CTAs.
@@ -185,7 +204,6 @@ Each section is self-contained; users are guided to features via clear CTAs.
 * no social feed
 * no marketplace
 * no complex gamification (initially)
-* no authentication in MVP (simulated userId)
 
 ---
 

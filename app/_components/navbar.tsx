@@ -2,16 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const links = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/modules", label: "Moduli" },
-  { href: "/quiz", label: "Quiz" },
-  { href: "/plans", label: "Piani" },
-] as const;
+import { useSession, signOut } from "next-auth/react";
+import { useT } from "@/lib/i18n/context";
 
 export function Navbar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const t = useT();
+
+  const links = [
+    { href: "/dashboard", label: t.nav_dashboard },
+    { href: "/modules", label: t.nav_modules },
+    { href: "/quiz", label: t.nav_quiz },
+    { href: "/plans", label: t.nav_plans },
+    { href: "/profile", label: t.nav_profile },
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/8 bg-white/70 backdrop-blur-xl">
@@ -41,16 +46,36 @@ export function Navbar() {
               </li>
             );
           })}
+          <li>
+            {session?.user ? (
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 hover:bg-stone-100 hover:text-slate-900 transition"
+              >
+                {t.nav_signOut}
+              </button>
+            ) : (
+              <Link
+                href="/auth/sign-in"
+                className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-800"
+              >
+                {t.nav_signIn}
+              </Link>
+            )}
+          </li>
         </ul>
 
-        {/* mobile menu – simple dropdown */}
-        <MobileMenu pathname={pathname} />
+        {/* mobile menu */}
+        <MobileMenu pathname={pathname} session={session} links={links} />
       </nav>
     </header>
   );
 }
 
-function MobileMenu({ pathname }: { pathname: string }) {
+function MobileMenu({ pathname, session, links }: { pathname: string; session: ReturnType<typeof useSession>["data"]; links: { href: string; label: string }[] }) {
+  const t = useT();
+
   return (
     <details className="relative md:hidden">
       <summary className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-black/10 bg-white text-slate-700">
@@ -73,6 +98,22 @@ function MobileMenu({ pathname }: { pathname: string }) {
             </Link>
           );
         })}
+        {session?.user ? (
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="block w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium text-slate-600 hover:bg-stone-50"
+          >
+            {t.nav_signOut}
+          </button>
+        ) : (
+          <Link
+            href="/auth/sign-in"
+            className="block rounded-xl px-4 py-2.5 text-sm font-medium text-teal-700 hover:bg-teal-50"
+          >
+            {t.nav_signIn}
+          </Link>
+        )}
       </div>
     </details>
   );
